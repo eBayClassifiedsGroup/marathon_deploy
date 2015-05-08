@@ -9,7 +9,7 @@ puts "######"
 #puts json["id"]
   
   
-json_converted = MarathonDefaults.override_preproduction_marathon_settings(json)
+json_converted = MarathonDefaults.overlay_preproduction_settings(json)
 
 puts JSON.pretty_generate(json_converted)
 

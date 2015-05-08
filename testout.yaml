@@ -47,7 +47,7 @@ healthChecks:
   protocol: HTTP
   timeoutSeconds: 30
 id: public-search-germany-webapp
-instances: 4
+instances: 99
 mem: 512
 storeUrls:
 - http://maven-download.mobile.rz/maven/hosted-mobile-deployment-productive-releases/de/mobile/public-search-germany-webapp/ecs-1558-gb70c745/public-search-germany-webapp-ecs-1558-gb70c745.jar
