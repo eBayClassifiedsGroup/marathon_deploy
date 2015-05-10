@@ -1,30 +1,54 @@
 ---
-
-invoice: 34843
-date   : 2001-01-23
-bill-to: &id001
-    given  : Chris
-    family : Dumars
-    address:
-        lines: |
-            458 Walkman Dr.
-            Suite #292
-        city    : Royal Oak
-        state   : MI
-        postal  : 48046
-ship-to: *id001
-product:
-    - sku         : BL394D
-      quantity    : 4
-      description : Basketball
-      price       : 450.00
-    - sku         : BL4438H
-      quantity    : 1
-      description : Super Hoop
-      price       : 2392.00
-tax  : 251.42
-total: 4443.52
-comments: >
-    Late afternoon is best.
-    Backup contact is Nancy
-    Billsmer @ 338-4338.
+args:
+- properties.py && FOO="`cat /opt/etc/public-search-germany-webapp.properties | grep
+  -v '^\s*#' | grep -E '.+=.+'`"; echo $FOO; echo; env $FOO; echo; env $FOO hostName=$HOSTNAME
+  backend.instance.name=$HOSTNAME java -Dhttp.port=8080 -Dajp.port=8009 -Dinstance.confdir=file:///opt/etc
+  -Dbackend.logdir=$MESOS_SANDBOX -Dlog.rootDir=$MESOS_SANDBOX -DlogDir=$MESOS_SANDBOX
+  $CMD_OPTS -Xmx$JAVA_XMX -Xms$JAVA_XMS -jar $MESOS_SANDBOX/public-search-germany-webapp*.jar
+cmd: 
+container:
+  docker:
+    image: dockerregistry.mobile.rz/mobile-java8:latest
+    network: BRIDGE
+    portMappings:
+    - containerPort: 8080
+      hostPort: 0
+      protocol: tcp
+    - containerPort: 8009
+      hostPort: 0
+      protocol: tcp
+  type: DOCKER
+cpus: 0.1
+env:
+  APPLICATION_NAME: public-search-germany-webapp
+  CMD_OPTS: ''
+  CONFIG_ASSEMBLER_BASE_URL: http://mobile-config-assembler.service.consul/config-assembler
+  DATACENTER_NUMBER: '44'
+  JAVA_XMS: 252m
+  JAVA_XMX: 504m
+  SERVERCLASS_NAME: pubse
+  SERVICE_8009_NAME: public-search-germany-webapp
+  SERVICE_8009_TAGS: ajp
+  SERVICE_8080_CHECK_SCRIPT: curl --fail --silent $HOST_IP:$SERVICE_PORT/fz/release-info
+  SERVICE_8080_NAME: public-search-germany-webapp
+  SERVICE_8080_TAGS: http,haproxy
+healthChecks:
+- gracePeriodSeconds: 30
+  intervalSeconds: 10
+  maxConsecutiveFailures: 3
+  portIndex: 0
+  protocol: TCP
+  timeoutSeconds: 30
+- gracePeriodSeconds: 30
+  intervalSeconds: 10
+  maxConsecutiveFailures: 3
+  path: "/fz/release-info"
+  portIndex: 0
+  protocol: HTTP
+  timeoutSeconds: 30
+id: public-search-germany-webapp
+instances: 4
+mem: 512
+storeUrls:
+- http://maven-download.mobile.rz/maven/hosted-mobile-deployment-productive-releases/de/mobile/public-search-germany-webapp/ecs-1558-gb70c745/public-search-germany-webapp-ecs-1558-gb70c745.jar
+uris: []
