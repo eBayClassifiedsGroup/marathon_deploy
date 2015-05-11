@@ -9,11 +9,15 @@ require 'json'
   end
   
   def self.json2yaml(filename)
+    json = read_json(filename)
+    yml = YAML::dump(json)
+  end
+  
+  def self.read_json(filename)
     file = File.open(filename,'r')
     data = file.read   
     file.close
-    json = JSON.parse(data)
-    yml = YAML::dump(json)
+    return JSON.parse(data)
   end
   
 end

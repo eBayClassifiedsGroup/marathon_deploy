@@ -56,7 +56,7 @@
       "timeoutSeconds": 30
     }
   ],
-  "id": "public-search-germany-webapp",
+  "id": "somename",
   "instances": 4,
   "mem": 512,
   "storeUrls": [
