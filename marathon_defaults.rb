@@ -11,12 +11,12 @@ module MarathonDefaults
     :JAVA_XMX => @@preproduction_override[:mem].to_s + "m",
   }  
   
-  @@required_marathon_env_variables = %w(
+  @@required_marathon_env_variables = %w[
     DATACENTER_NUMBER
     APPLICATION_NAME
-  )
+  ]
   
-  @@required_marathon_attributes = %i(id env container healthChecks args)
+  @@required_marathon_attributes = %w[id env container healthChecks args].map(&:to_sym)
   
   def self.symbolize(data) 
     data.inject({}){|h,(k,v)| h[k.to_sym] = v; h}

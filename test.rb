@@ -35,9 +35,7 @@ OptionParser.new do |opts|
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
     exit
-  end
-  
-  
+  end 
 end.parse!
 
 deployfile = options[:deployfile]
@@ -72,6 +70,8 @@ end
 if(environment != production_environment_name)
   marathon_json = MarathonDefaults.overlay_preproduction_settings(marathon_json)
 end
+
+
 
 #puts json_integration_converted 
 
