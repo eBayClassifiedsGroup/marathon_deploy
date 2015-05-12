@@ -1,13 +1,13 @@
 require 'yaml_json'
-require 'marathon_defaults'
-require 'marathon_api'
+require 'marathon_deploy/marathon_defaults'
+require 'marathon_deploy/marathon_api'
 require 'optparse'
 
 # TODO
 # log to database
 # post to marathon
 # datacenter handling, iterate
-# inject envs DATACENTER_NUMBER, ENVIRONMENT 
+# Using options, override DATACENTER_NUMBER, ENVIRONMENT
   
 options = {}
   
@@ -84,6 +84,6 @@ if(environment != production_environment_name)
 end
 
 
-MarathonApi.post(marathon_app_post_url,marathon_json)
+#MarathonApi.post(marathon_app_post_url,marathon_json)
 
-#puts JSON.pretty_generate(marathon_json)
+puts JSON.pretty_generate(marathon_json)

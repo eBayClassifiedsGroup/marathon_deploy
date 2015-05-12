@@ -2,6 +2,9 @@ require 'net/http'
 require 'uri'
 
 # http://www.mudskipper-solutions.com/home/how-to-send-jsonhttp-using-ruby
+# http://www.bls.gov/developers/api_ruby.htm
+# https://gist.github.com/amirrajan/2369851
+# http://mikeebert.tumblr.com/post/56891815151/posting-json-with-net-http
 
 module MarathonApi
   
