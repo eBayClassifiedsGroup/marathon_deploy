@@ -1,5 +1,6 @@
 require 'yaml_json'
 require 'marathon_defaults'
+require 'marathon_api'
 require 'optparse'
 
 # TODO
@@ -11,15 +12,25 @@ require 'optparse'
 options = {}
   
 # DEFAULTS
-production_environment_name = "production"
-default_environment_name = "integration"
-options[:deployfile] = "deploy.yaml"
+production_environment_name = 'production'
+default_environment_name = 'integration'
+options[:deployfile] = 'deploy.yaml'
 options[:verbose] = false
 options[:environment] = default_environment_name
+options[:marathon_url] = 'http://192.168.59.103:8080'
+options[:marathon_app_path] = '/v2/apps'
   
 OptionParser.new do |opts|
   opts.banner = "Usage: deploy.rb [options]"
 
+  opts.on("-u", "--url MARATHON_URL", "Default: #{options[:marathon_url]}") do |u|
+    options[:marathon_url] = u  
+  end
+  
+  opts.on("-p", "--path MARATHON_API_PATH", "Default: #{options[:marathon_app_path]}") do |p|
+    options[:marathon_app_path] = p  
+  end
+  
   opts.on("-v", "--verbose", "Run verbosely") do |v|
     options[:verbose] = v
   end
@@ -40,6 +51,7 @@ end.parse!
 
 deployfile = options[:deployfile]
 environment = options[:environment]
+marathon_app_post_url =  options[:marathon_url] + options[:marathon_app_path]
 
 if (!File.exist?(File.join(File.expand_path(__dir__),deployfile)))
   abort("#{deployfile} not found in current directory #{File.join(File.expand_path(__dir__))}")
@@ -72,9 +84,6 @@ if(environment != production_environment_name)
 end
 
 
+MarathonApi.post(marathon_app_post_url,marathon_json)
 
-#puts json_integration_converted 
-
-puts JSON.pretty_generate(marathon_json)
-
-puts "### END ###"
+#puts JSON.pretty_generate(marathon_json)

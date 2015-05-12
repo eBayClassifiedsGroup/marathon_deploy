@@ -8,7 +8,7 @@ module MarathonDefaults
   
   @@preproduction_env = {
     :DATACENTER_NUMBER => 44,
-    :JAVA_XMX => @@preproduction_override[:mem].to_s + "m",
+    :JAVA_XMX => "256m"
   }  
   
   @@required_marathon_env_variables = %w[
