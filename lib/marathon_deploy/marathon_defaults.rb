@@ -2,7 +2,7 @@ module MarathonDefaults
 
   @@preproduction_override = {
     :instances => 1,
-    :mem => 256,
+    :mem => 32,
     :cpus => 0.1      
   } 
   
@@ -17,7 +17,8 @@ module MarathonDefaults
     APPLICATION_NAME
   ]
   
-  @@required_marathon_attributes = %w[id env container healthChecks args].map(&:to_sym)
+  #@@required_marathon_attributes = %w[id env container healthChecks args].map(&:to_sym)
+  @@required_marathon_attributes = %w[id].map(&:to_sym)
   
   def self.symbolize(data) 
     data.inject({}){|h,(k,v)| h[k.to_sym] = v; h}
@@ -50,7 +51,8 @@ module MarathonDefaults
     json = symbolize(json)
     
     if (!json.key?(:env))
-      abort("no env attribute found in deployment file") 
+      $LOG.error("no env attribute found in deployment file") 
+      exit!
     end
     
     missing = []
@@ -65,7 +67,11 @@ module MarathonDefaults
   def self.overlay_preproduction_settings(json)
     json = deep_symbolize(json)
       @@preproduction_override.each do |property,value|
-        json[property] = value
+        given_value = json[property]
+        if (given_value > @@preproduction_override[property])
+          $LOG.debug("overriding property [#{property}: #{json[property]}] with preproduction default [#{property}: #{@@preproduction_override[property]}]")
+          json[property] = @@preproduction_override[property]
+        end
       end
       @@preproduction_env.each do |name,value|
         json[:env][name] = value
