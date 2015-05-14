@@ -1,6 +1,7 @@
-require 'yaml_json'
 require 'marathon_deploy/marathon_defaults'
-require 'marathon_deploy/marathon_api'
+require 'marathon_deploy/marathon_client'
+require 'marathon_deploy/error'
+require 'marathon_deploy/application'
 require 'optparse'
 require 'logger'
 
@@ -20,10 +21,10 @@ require 'logger'
 options = {}
   
 # DEFAULTS
-production_environment_name = 'production'
-default_environment_name = 'integration'
+production_environment_name = 'PRODUCTION'
+default_environment_name = 'INTEGRATION'
 options[:deployfile] = 'deploy.yaml'
-options[:verbose] = Logger::WARN
+options[:verbose] = Logger::INFO
 options[:environment] = default_environment_name
 options[:marathon_url] = 'http://192.168.59.103:8080'
 options[:logfile] = false
@@ -48,7 +49,7 @@ OptionParser.new do |opts|
   end
   
   opts.on("-e", "--environment ENVIRONMENT", "Default: #{default_environment_name}" ) do |e|
-    options[:environment] = e
+    options[:environment] = e.upcase
   end
   
   opts.on_tail("-h", "--help", "Show this message") do
@@ -62,57 +63,35 @@ $LOG.level = options[:verbose]
 
 deployfile = options[:deployfile]
 environment = options[:environment]
+marathon_url = options[:marathon_url]
 
-#if (!File.exist?(File.join(File.expand_path(__dir__),deployfile)))
-if (!File.exist?(File.join(Dir.pwd,deployfile)))
-  $LOG.error("#{deployfile} not found in current directory #{File.join(Dir.pwd)}")
+begin
+  application = Application.new(deployfile)
+rescue Error::UnsupportedFileExtension => e
+  $LOG.error(e)
+  exit!
+rescue Error::IOError => e
+  $LOG.error(e)
+  exit!
+rescue Error::MissingMarathonAttributesError => e
+  $LOG.error(e)
   exit!
 end
 
-extension = File.extname(deployfile)
-marathon_json = nil
+#puts application.json
 
-case extension
-when '.json'
-  marathon_json = YamlJson.read_json(deployfile)
-when '.yaml'
-  marathon_json = YamlJson.yaml2json(deployfile)
-else
-  $LOG.error("File extension #{extension} is not supported for deployment file #{deployfile}")
-  exit!  
-end  
-
-missing_attributes = MarathonDefaults.missing_attributes(marathon_json)
-if(!missing_attributes.empty?)
-  $LOG.error("#{deployfile} is missing required marathon API attributes: #{missing_attributes.join(',')}")
+begin
+  application.add_envs({ :APPLICATION_NAME => application.id, :ENVIRONMENT => environment})
+rescue Error::BadFormatError => e
+  $LOG.error(e)
   exit!
 end
 
-missing_envs = MarathonDefaults.missing_envs(marathon_json)
-if(!missing_envs.empty?)
-  $LOG.error("#{deployfile} is missing required environment variables: #{missing_envs.join(',')}")
-  exit!
-end
+puts "#" * 100
+puts JSON.pretty_generate(application.json)
+puts "#" * 100
 
-if(environment != production_environment_name)
-  marathon_json = MarathonDefaults.overlay_preproduction_settings(marathon_json)
-end
+client = MarathonClient.new(marathon_url)
 
-#puts marathon_json[:id]
-#stuff = MarathonApi.get(options[:marathon_url] + options[:marathon_apps_api] + "/#{marathon_json[:id]}")
-
-#  puts stuff.code
-  
-MarathonApi.versions(options[:marathon_url],marathon_json)
-  
-#response = MarathonApi.post(options[:marathon_url] + '/v2/apps',marathon_json)
-  
-puts JSON.pretty_generate(marathon_json)
-  
-puts "SEND TO MARATHON: " + options[:marathon_url] + '/v2/apps/' + marathon_json[:id]
-response = MarathonApi.put(options[:marathon_url] + '/v2/apps/' + marathon_json[:id],marathon_json)
-
-puts response.body
-puts response.code
-
-#puts JSON.pretty_generate(marathon_json)
+client.application = application
+client.deploy

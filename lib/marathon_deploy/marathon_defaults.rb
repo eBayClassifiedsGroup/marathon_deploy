@@ -1,8 +1,10 @@
+require 'marathon_deploy/utils'
+
 module MarathonDefaults
 
   @@preproduction_override = {
     :instances => 1,
-    :mem => 32,
+    :mem => 256,
     :cpus => 0.1      
   } 
   
@@ -20,24 +22,9 @@ module MarathonDefaults
   #@@required_marathon_attributes = %w[id env container healthChecks args].map(&:to_sym)
   @@required_marathon_attributes = %w[id].map(&:to_sym)
   
-  def self.symbolize(data) 
-    data.inject({}){|h,(k,v)| h[k.to_sym] = v; h}
-  end
-  
-  def self.deep_symbolize(obj)
-    return obj.reduce({}) do |memo, (k, v)|
-      memo.tap { |m| m[k.to_sym] = deep_symbolize(v) }
-    end if obj.is_a? Hash
-    
-    return obj.reduce([]) do |memo, v| 
-      memo << deep_symbolize(v); memo
-    end if obj.is_a? Array
-  
-    obj
-  end
   
   def self.missing_attributes(json)
-    json = symbolize(json)
+    json = Utils.symbolize(json)
     missing = []
     @@required_marathon_attributes.each do |att|
       if (!json[att])
@@ -48,7 +35,7 @@ module MarathonDefaults
   end
   
   def self.missing_envs(json)
-    json = symbolize(json)
+    json = Utils.symbolize(json)
     
     if (!json.key?(:env))
       $LOG.error("no env attribute found in deployment file") 
@@ -62,14 +49,14 @@ module MarathonDefaults
       end
     end
     return missing
-  end
+  end  
   
   def self.overlay_preproduction_settings(json)
-    json = deep_symbolize(json)
+    json = Utils.deep_symbolize(json)
       @@preproduction_override.each do |property,value|
         given_value = json[property]
         if (given_value > @@preproduction_override[property])
-          $LOG.debug("overriding property [#{property}: #{json[property]}] with preproduction default [#{property}: #{@@preproduction_override[property]}]")
+          $LOG.debug("Overriding property [#{property}: #{json[property]}] with preproduction default [#{property}: #{@@preproduction_override[property]}]")
           json[property] = @@preproduction_override[property]
         end
       end
@@ -79,5 +66,4 @@ module MarathonDefaults
       return json
   end
   
-  MarathonDefaults.private_class_method :symbolize
 end
