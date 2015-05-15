@@ -75,10 +75,9 @@ rescue Error::BadFormatError => e
   exit!
 end
 
-if (environment.is_production?)
+if (!environment.is_production?)
   application.overlay_preproduction_settings
 end
-
 
 puts "#" * 100
 puts JSON.pretty_generate(application.json)
