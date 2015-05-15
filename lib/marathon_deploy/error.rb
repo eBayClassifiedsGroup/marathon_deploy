@@ -6,6 +6,8 @@ module Error
     
   class IOError < MarathonError; end
     
+  class BadURLError < MarathonError; end
+    
   class UnsupportedFileExtension < MarathonError; end
     
   class MissingMarathonAttributesError < MarathonError; end

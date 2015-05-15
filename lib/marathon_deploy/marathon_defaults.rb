@@ -1,10 +1,20 @@
 require 'marathon_deploy/utils'
+require 'logger'
 
 module MarathonDefaults
+  
+  
+  PRODUCTION_ENVIRONMENT_NAME = 'PRODUCTION'
+  DEFAULT_ENVIRONMENT_NAME = 'INTEGRATION'
+  DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://192.168.59.103:8080']
+  DEFAULT_PRODUCTION_MARATHON_ENDPOINTS = ['http://192.168.59.103:8080']
+  DEFAULT_DEPLOYFILE = 'deploy.yaml'
+  DEFAULT_LOGFILE = false
+  DEFAULT_LOGLEVEL = Logger::INFO
 
   @@preproduction_override = {
     :instances => 1,
-    :mem => 256,
+    :mem => 512,
     :cpus => 0.1      
   } 
   

@@ -1,0 +1,13 @@
+
+# TODO
+# SLACK notification
+# https://mesosphere.com/blog/2015/04/02/continuous-deployment-with-mesos-marathon-docker/
+# log to database
+# datacenter handling, iterate
+# deployment status polling
+# config assembler / generate properties script
+# deploying app VERSIONS
+# VERSION, default read ENV VARIABLE OR get via '-r' parameter
+# inject / replce minimumHealthCapacity is 1, maximumOverCapacity is 1
+# TODO: extern ports
+# TODO:  read macros %NAME% from yaml/json and verify they are defined

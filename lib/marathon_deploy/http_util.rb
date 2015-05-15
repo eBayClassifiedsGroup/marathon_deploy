@@ -50,6 +50,13 @@ module HttpUtil
     end
     return  response
   end
+  
+  def self.valid_url(url)
+    if (url =~ /\A#{URI::regexp}\z/)
+      return true
+    end
+    return false
+  end
  
   def self.print(response)
     begin

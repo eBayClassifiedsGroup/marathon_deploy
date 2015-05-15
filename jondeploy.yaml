@@ -11,6 +11,6 @@ env:
   SERVICE_8009_NAME: public-search-germany-webapp
   SERVICE_8009_TAGS: ajp
 id: public-search-germany-webapp
-instances: 4
-mem: 512
+instances: 5
+mem: 128
 uris: []

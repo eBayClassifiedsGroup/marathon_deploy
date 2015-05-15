@@ -45,17 +45,20 @@ class Deployment
     return true
   end
   
-  def wait(id)
-    Timeout::timeout(TIMEOUT) do
-      while self.running_for?(id)
-        response = list 
-        $LOG.debug(response.body)       
-        $LOG.info("Deployment of #{id} is in progress")
-        sleep(RECHECK_INTERVAL)
-      end
-    end
+  def wait(id)  
+      Timeout::timeout(TIMEOUT) do
+        while self.running_for?(id)
+          response = list
+          STDOUT.print "." if ( $LOG.level == 1 )
+          $LOG.debug("Deployment of #{id} in progress")
+          $LOG.debug(JSON.pretty_generate(JSON.parse(response.body)))       
+          sleep(RECHECK_INTERVAL)
+        end
+        STDOUT.puts "" if ( $LOG.level == 1 )
+      end    
   end
   
+  # rollback
   def cancel
   end
 
