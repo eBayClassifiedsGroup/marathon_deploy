@@ -32,18 +32,6 @@ class MarathonClient
     end
   end
   
-  def list_app
-    HttpUtil.get(@marathon_url + @@marathon_apps_rest_path + application.id)
-  end
-     
-  def exists?
-    response = list_app
-    if (response.code.to_i == 200)
-      return true
-    end
-      return false
-  end
-
   def versions    
     return { :body => "Application #{application.id} is not deployed.", :code => '404' }.to_json if !self.exists?   
     url = @marathon_url + @@marathon_apps_rest_path + id + '/versions'
@@ -55,9 +43,9 @@ class MarathonClient
   def deploy
     deployment = Deployment.new(@marathon_url)
     
-    $LOG.info("Checking for already running deployments of #{application.id}")
+    $LOG.info("Checking for running deployments of application #{application.id}")
     begin
-      deployment.wait(application.id)
+      deployment.wait_for_application_id(application.id, "Deployment already running for application #{application.id}")
     rescue Timeout::Error => e
       $LOG.error("Timed out waiting for existing deployment of #{application.id} to finish. Could not start new deployment.")
       $LOG.error("Check marathon #{@marathon_url + '/#deployments'} for stuck deployments!")
@@ -65,33 +53,67 @@ class MarathonClient
     end 
     
     $LOG.info("Starting deployment of #{application.id}")
-    if (self.exists?)
+    
+    if (applicationExists?)
       $LOG.info("#{application.id} already exists. Performing update.")
       response = update_app
-      status =  Utils.parse_response(response)
-      puts "===>"
-      puts status[:deploymentId]
-      puts "<==="
+      response_body =  Utils.response_body(response) 
+      
+      if ((300..999).include?(response.code.to_i))
+        raise Error::DeploymentError, "Deployment return response code #{response.code}", caller
+      end
+       
+      begin
+        deployment.wait_for_deployment_id(response_body[:deploymentId]) 
+      rescue Timeout::Error => e
+        $LOG.error("Timed out waiting for deployment of #{application.id} to complete.")
+        $LOG.error("Cancelling deployment and rolling back!")
+        # TODO: initiate rollback
+        # TODO: check rollback
+        raise Error::DeploymentError, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
+      end 
+      
     else     
       response = create_app
-      puts response.body
+      status = Utils.response_body(response)
+      
+      if ((300..999).include?(response.code.to_i))
+        raise Error::DeploymentError, "Deployment return response code #{response.code}", caller
+      end
+        
+      begin
+        deployment.wait_for_application_id(application.id)
+      rescue Timeout::Error => e
+        $LOG.error("Timed out waiting for deployment of #{application.id} to complete.")
+        $LOG.error("Cancelling deployment and rolling back!")
+        # TODO: initiate rollback
+        # TODO: check rollback
+        raise Error::DeploymentError, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
+      end 
+      
     end
-    
-    #puts deployment.deployments_for(application.id)
-    begin
-      deployment.wait(application.id)
-    rescue Timeout::Error => e
-      $LOG.error("Timed out waiting for deployment of #{application.id} to complete.")
-      $LOG.error("Cancelling deployment and rolling back!")
-      # initiate rollback
-      # check rollback
-      # do not exit
-    end      
-    # get status / health
+     
+    # TODO
+    # POLL FOR HEALTH
+    # DO HEALTH CHECK AND POLL UNTIL HEALTHY
+    # HEALTHY exit OK
+    # SICK exit NOT OK
 
   end
 
   private
+  
+  def applicationExists?
+    response = list_app
+    if (response.code.to_i == 200)
+      return true
+    end
+      return false
+  end
+  
+  def list_app
+    HttpUtil.get(@marathon_url + @@marathon_apps_rest_path + application.id)
+  end
     
   def create_app
     HttpUtil.post(@marathon_url + @@marathon_apps_rest_path,application.json)

@@ -13,4 +13,7 @@ module Error
   class MissingMarathonAttributesError < MarathonError; end
     
   class BadFormatError < MarathonError; end
+  
+  class DeploymentError < MarathonError ; end
+
 end

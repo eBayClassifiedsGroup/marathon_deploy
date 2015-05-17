@@ -12,7 +12,7 @@ module MarathonDefaults
   DEFAULT_LOGLEVEL = Logger::INFO
 
   @@preproduction_override = {
-    :instances => 1,
+    :instances => 20,
     :mem => 512,
     :cpus => 0.1      
   } 

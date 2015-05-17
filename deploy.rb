@@ -95,6 +95,9 @@ marathon_endpoints.each do |marathon_url|
   rescue SocketError => e
     $LOG.error("Could not connect to endpoint => #{marathon_url} (#{e.message})")
     exit!
+  rescue Error::DeploymentError => e
+    $LOG.error("Deployment of #{application} did not complete successfully => #{e}")
+    exit!
   end
 
 end

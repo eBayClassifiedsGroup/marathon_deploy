@@ -56,6 +56,10 @@ class Application
     json[:env]['UNIQUE_ID'] = "#{id}_#{random}"
   end
   
+  def to_s
+    return id
+  end
+  
   def id
     if (@json[:id])
       @json[:id]
@@ -71,5 +75,5 @@ class Application
       raise Error::BadFormatError, "argument must be a hash", caller
     end
   end
-
+     
 end

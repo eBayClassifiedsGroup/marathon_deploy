@@ -21,7 +21,7 @@ module Utils
     return Array.new(30){ range.sample }.join
   end
   
-  def self.parse_response(response)
+  def self.response_body(response)
     if (response.is_a?(Net::HTTPResponse) && !response.body.nil?)
       return deep_symbolize((JSON.parse(response.body)))
     end
