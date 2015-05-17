@@ -28,6 +28,7 @@ class Application
     end 
     
     missing_attributes = MarathonDefaults.missing_attributes(@json) 
+    
     if(!missing_attributes.empty?)
       message = "#{deployfile} is missing required marathon API attributes: #{missing_attributes.join(',')}"
       raise Error::MissingMarathonAttributesError, message, caller
@@ -39,7 +40,6 @@ class Application
       raise Error::MissingMarathonAttributesError, message, caller
     end
     
-
     @json =  Utils.deep_symbolize(@json)
     @deployfile = deployfile  
     
@@ -55,7 +55,6 @@ class Application
     # Time.now.to_i
     json[:env]['UNIQUE_ID'] = "#{id}_#{random}"
   end
-  
   
   def id
     if (@json[:id])

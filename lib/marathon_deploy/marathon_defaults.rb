@@ -2,8 +2,7 @@ require 'marathon_deploy/utils'
 require 'logger'
 
 module MarathonDefaults
-  
-  
+ 
   PRODUCTION_ENVIRONMENT_NAME = 'PRODUCTION'
   DEFAULT_ENVIRONMENT_NAME = 'INTEGRATION'
   DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://192.168.59.103:8080']
@@ -31,8 +30,7 @@ module MarathonDefaults
   
   #@@required_marathon_attributes = %w[id env container healthChecks args].map(&:to_sym)
   @@required_marathon_attributes = %w[id].map(&:to_sym)
-  
-  
+   
   def self.missing_attributes(json)
     json = Utils.symbolize(json)
     missing = []
