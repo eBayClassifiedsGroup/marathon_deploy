@@ -31,18 +31,10 @@ class MarathonClient
       @options.delete(:password)
     end
   end
-  
-  def versions    
-    return { :body => "Application #{application.id} is not deployed.", :code => '404' }.to_json if !self.exists?   
-    url = @marathon_url + MarathonDefaults::MARATHON_APPS_REST_PATH + id + '/versions'
-    $LOG.debug("Calling marathon api with url: #{url}")  
-    response = HttpUtil.get(url)  
-    return JSON.pretty_generate(JSON.parse(response.body))
-  end
-    
+
   def deploy
     deployment = Deployment.new(@marathon_url)
-    
+    puts deployment.versions(application)
     $LOG.info("Checking for running deployments of application #{application.id}")
     begin
       deployment.wait_for_application_id(application.id, "Deployment already running for application #{application.id}")
@@ -75,20 +67,22 @@ class MarathonClient
       
       response_body = Utils.response_body(response)
       deploymentId = deployment.get_deployment_id_for_application(application)
-
     end
     
-    $LOG.info("Deployment running for #{application.id} with deploymentId #{deploymentId}")
+    unless (deploymentId.nil?)
+      $LOG.info("Deployment running for #{application.id} with deploymentId #{deploymentId}")
+    end
     
     begin
       deployment.wait_for_deployment_id(deploymentId) 
     rescue Timeout::Error => e
       $LOG.error("Timed out waiting for deployment of #{application.id} to complete.")
-      $LOG.error("Cancelling deploymentId #{deploymentId} and rolling back!")
+      $LOG.error("Canceling deploymentId #{deploymentId} and rolling back!")
       deployment.cancel(deploymentId)
       raise Error::DeploymentError, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
     end 
      
+    deployment.is_healthy?(application)
     # TODO
     # POLL FOR HEALTH
     # DO HEALTH CHECK AND POLL UNTIL HEALTHY

@@ -1,5 +1,5 @@
 ---
-cmd: while true; echo "APP 2 HELLO WORLD $(date)"; do sleep 1 ; done 
+cmd: while true; do /usr/bin/echo "HELLO"; sleep 1 ; done
 cpus: 0.5
 env:
   APPLICATION_NAME: public-search-germany-webapp
@@ -11,6 +11,8 @@ env:
   SERVICE_8009_NAME: public-search-germany-webapp
   SERVICE_8009_TAGS: ajp
 id: content-webapp
-instances: 15
+instances: 1
 mem: 32
 uris: []
+ports:
+ - 2000

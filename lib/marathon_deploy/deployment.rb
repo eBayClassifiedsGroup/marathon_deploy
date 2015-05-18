@@ -18,6 +18,18 @@ class Deployment
   def timeout
     return TIMEOUT
   end
+  
+  def versions(application)
+    puts "VERSIONS"    
+    if (!applicationExists?(application)) 
+      puts "GOT IN HERE"  
+      response = HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id + '/versions')  
+      response_body = Utils.response_body(response)
+      return response_body[:versions]
+    else
+      return Array.new
+    end
+  end
  
   def running_for_application_id?(applicationId)
     if (self.deployment_running? && !deployments_for_application_id(applicationId).empty?)
@@ -50,7 +62,7 @@ class Deployment
           #STDOUT.print "." if ( $LOG.level == 1 )
           $LOG.info(message)
           deployments = deployments_for_deployment_id(deploymentId)
-          deployments_for_deployment_id(deploymentId).each do |item|
+          deployments.each do |item|
             $LOG.debug(deployment_string(item))
           end   
           sleep(RECHECK_INTERVAL)
@@ -83,10 +95,12 @@ class Deployment
       end    
   end
     
-  def cancel(deploymentId)
+  def cancel(deploymentId,force=false)
     raise Error::BadURLError, "deploymentId must be specified to cancel deployment", caller if (deploymentId.empty?)
     if (running_for_deployment_id?(deploymentId))
-      HttpUtil.delete(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH + '/' + deploymentId)
+      puts "GOT INSTIDE THE CANCEL FUNCTION"
+      results = HttpUtil.delete(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH + '/' + deploymentId + "?force=#{force}")
+      puts "STATUS CODE #{results.code} "
     end
   end
   
@@ -132,8 +146,15 @@ class Deployment
   
   private
   # TODO
+  # check for defined health checks
+  # if defined health check, report on health statistics
   def get_health_for_app(application)
     puts "######### GET HEALTH FOR APP #########"
+    response = list_app(application)
+    response_body = Utils.response_body(response)
+    puts "TYPE?"
+    puts JSON.pretty_generate(response_body[:app][:healthChecks])
+    puts response_body[:app][:healthChecks].empty?
   end
   
   def list_all
