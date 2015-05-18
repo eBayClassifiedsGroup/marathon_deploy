@@ -1,5 +1,6 @@
 require 'net/http'
 require 'uri'
+require 'marathon_deploy/error'
 
 module HttpUtil
 
@@ -27,14 +28,34 @@ module HttpUtil
       req["Content-Type"] = "application/json"
       response = http.request(req)
     rescue Errno::ECONNREFUSED => e
-      $LOG.error("Error calling marathon api: #{e.message}")
-      exit!
+      message = "Error calling marathon api: #{e.message}"
+      $LOG.error(message)
+      raise Error::MarathonError, message, caller
     end
     return response
   end
   
   def self.construct_uri(url)
+    raise Error::BadURLError unless (valid_url(url))
     return URI.parse(url)
+  end
+  
+  def self.delete(url)
+    uri = construct_uri url 
+       begin
+         http = Net::HTTP.new(uri.host, uri.port)
+         req = Net::HTTP::Delete.new(uri.request_uri)         
+         response = http.request(req)
+       rescue Errno::ECONNREFUSED => e
+         message = "Error calling marathon api: #{e.message}"
+         $LOG.error(message)
+         raise Error::MarathonError, message, caller
+       end
+       return response    
+  end
+  
+  def self.clean_url(url)
+    url.sub(/(\/)+$/,'')
   end
   
   def self.get(url)
@@ -44,8 +65,9 @@ module HttpUtil
     req = Net::HTTP::Get.new(uri.request_uri)
     response = http.request(req)
     rescue  Errno::ECONNREFUSED => e
-      $LOG.error("Error calling marathon api: #{e.message}")
-      exit!
+      message = "Error calling marathon api: #{e.message}"
+      $LOG.error(message)
+      raise Error::MarathonError, message, caller
     end
     return  response
   end

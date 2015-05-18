@@ -9,5 +9,5 @@
 # deploying app VERSIONS
 # VERSION, default read ENV VARIABLE OR get via '-r' parameter
 # inject / replce minimumHealthCapacity is 1, maximumOverCapacity is 1
-# TODO: extern ports
+# TODO: external ports
 # TODO:  read macros %NAME% from yaml/json and verify they are defined

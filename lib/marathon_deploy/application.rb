@@ -43,7 +43,8 @@ class Application
     @json =  Utils.deep_symbolize(@json)
     @deployfile = deployfile  
     
-    self.add_identifier  
+    add_identifier
+    process_macros  
   end
   
   def overlay_preproduction_settings
@@ -74,6 +75,18 @@ class Application
     else
       raise Error::BadFormatError, "argument must be a hash", caller
     end
+  end
+  
+  private
+  
+  def process_macros
+    puts "### PROCESSING MACROS ###"
+  end
+  
+  def collect_macro_variables
+  end
+  
+  def validate_environment_variables(envs)
   end
      
 end

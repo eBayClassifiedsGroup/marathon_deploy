@@ -4,15 +4,15 @@ require 'marathon_deploy/marathon_defaults'
 require 'timeout'
 
 class Deployment
-  include HttpUtil
   
-  RECHECK_INTERVAL = 3
-  TIMEOUT = 180
+  RECHECK_INTERVAL = MarathonDefaults::DEPLOYMENT_RECHECK_INTERVAL
+  TIMEOUT = MarathonDefaults::DEPLOYMENT_TIMEOUT
   
   attr_reader :url
   
   def initialize(url)
-    @url = url
+    raise Error::BadURLError, "invalid url => #{url}", caller if (!HttpUtil.valid_url(url))    
+    @url = HttpUtil.clean_url(url)
   end
   
   def timeout
@@ -83,8 +83,11 @@ class Deployment
       end    
   end
     
-  # ie, rollback
-  def cancel
+  def cancel(deploymentId)
+    raise Error::BadURLError, "deploymentId must be specified to cancel deployment", caller if (deploymentId.empty?)
+    if (running_for_deployment_id?(deploymentId))
+      HttpUtil.delete(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH + '/' + deploymentId)
+    end
   end
   
   def applicationExists?(application)
@@ -121,7 +124,17 @@ class Deployment
     return nil
   end
   
+  # TODO
+  def is_healthy?(application)
+    get_health_for_app(application)
+    return true
+  end
+  
   private
+  # TODO
+  def get_health_for_app(application)
+    puts "######### GET HEALTH FOR APP #########"
+  end
   
   def list_all
     HttpUtil.get(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH)

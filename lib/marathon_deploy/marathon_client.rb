@@ -20,7 +20,7 @@ class MarathonClient
     
     raise Error::BadURLError, "invalid url => #{url}", caller if (!HttpUtil.valid_url(url))
    
-    @marathon_url = url
+    @marathon_url = HttpUtil.clean_url(url)
     @options = options
     if @options[:username] and @options[:password]
       @options[:basic_auth] = {
@@ -84,9 +84,8 @@ class MarathonClient
       deployment.wait_for_deployment_id(deploymentId) 
     rescue Timeout::Error => e
       $LOG.error("Timed out waiting for deployment of #{application.id} to complete.")
-      $LOG.error("Cancelling deployment and rolling back!")
-      # TODO: initiate rollback
-      # TODO: check rollback
+      $LOG.error("Cancelling deploymentId #{deploymentId} and rolling back!")
+      deployment.cancel(deploymentId)
       raise Error::DeploymentError, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
     end 
      
@@ -97,9 +96,4 @@ class MarathonClient
     # SICK exit NOT OK
 
   end
-
-  private
-  
-
-  
 end

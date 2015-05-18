@@ -12,7 +12,7 @@ options = {}
 options[:deployfile] = MarathonDefaults::DEFAULT_DEPLOYFILE
 options[:verbose] = MarathonDefaults::DEFAULT_LOGLEVEL
 options[:environment] = MarathonDefaults::DEFAULT_ENVIRONMENT_NAME
-options[:marathon_endpoints] = MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
+options[:marathon_endpoints] = nil
 options[:logfile] = MarathonDefaults::DEFAULT_LOGFILE
   
 OptionParser.new do |opts|
@@ -49,12 +49,18 @@ $LOG.level = options[:verbose]
 
 deployfile = options[:deployfile]
 environment = Environment.new(options[:environment])
-marathon_endpoints = options[:marathon_endpoints]
-
-marathon_endpoints.each do |url|
-  abort("Invalid url => #{url}") if (!HttpUtil.valid_url(url))
-end
   
+marathon_endpoints = Array.new
+if (options[:marathon_endpoints].nil?)
+  if (environment.is_production?)
+    marathon_endpoints = MarathonDefaults::DEFAULT_PRODUCTION_MARATHON_ENDPOINTS
+  else
+    marathon_endpoints = MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
+  end
+else
+  marathon_endpoints = options[:marathon_endpoints]
+end
+ 
 begin
   application = Application.new(deployfile)
 rescue Error::UnsupportedFileExtension => e
@@ -91,12 +97,12 @@ marathon_endpoints.each do |marathon_url|
     client.deploy  
   rescue Error::BadURLError => e
     $LOG.error(e)
-    exit!
-  rescue SocketError => e
-    $LOG.error("Could not connect to endpoint => #{marathon_url} (#{e.message})")
-    exit!
+    exit! 
   rescue Error::DeploymentError => e
     $LOG.error("Deployment of #{application} did not complete successfully => #{e}")
+    exit!
+  rescue SocketError, Error::MarathonError  => e
+    $LOG.error("Problem talking to marathon endpoint => #{marathon_url} (#{e.message})")
     exit!
   end
 
