@@ -11,7 +11,6 @@ module HttpUtil
       req.body = payload.to_json
       req["Content-Type"] = "application/json"
       response = http.request(req)
-      print response
     rescue Errno::ECONNREFUSED => e
       $LOG.error("Error calling marathon api: #{e.message}")
       exit!

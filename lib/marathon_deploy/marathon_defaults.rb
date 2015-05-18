@@ -10,6 +10,8 @@ module MarathonDefaults
   DEFAULT_DEPLOYFILE = 'deploy.yaml'
   DEFAULT_LOGFILE = false
   DEFAULT_LOGLEVEL = Logger::INFO
+  MARATHON_APPS_REST_PATH = '/v2/apps/'
+  MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
 
   @@preproduction_override = {
     :instances => 20,

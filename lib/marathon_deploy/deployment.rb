@@ -1,4 +1,6 @@
 require 'marathon_deploy/http_util'
+require 'marathon_deploy/utils'
+require 'marathon_deploy/marathon_defaults'
 require 'timeout'
 
 class Deployment
@@ -7,7 +9,6 @@ class Deployment
   RECHECK_INTERVAL = 3
   TIMEOUT = 180
   
-  @@marathon_deployments_rest_path = '/v2/deployments/'
   attr_reader :url
   
   def initialize(url)
@@ -16,10 +17,6 @@ class Deployment
   
   def timeout
     return TIMEOUT
-  end
-
-  def list
-    HttpUtil.get(url + @@marathon_deployments_rest_path)
   end
  
   def running_for_application_id?(applicationId)
@@ -37,7 +34,7 @@ class Deployment
   end
   
   def deployment_running?
-    response = list
+    response = list_all
     body = JSON.parse(response.body)
     return false if body.empty?
     return true
@@ -49,7 +46,7 @@ class Deployment
         while running_for_deployment_id?(deploymentId)
 
           deployment_seen = true
-          #response = list
+          #response = list_all
           #STDOUT.print "." if ( $LOG.level == 1 )
           $LOG.info(message)
           deployments = deployments_for_deployment_id(deploymentId)
@@ -70,7 +67,7 @@ class Deployment
       Timeout::timeout(TIMEOUT) do
         while running_for_application_id?(applicationId)
           deployment_seen = true
-          #response = list
+          #response = list_all
           #STDOUT.print "." if ( $LOG.level == 1 )
           $LOG.info(message)
           deployments_for_application_id(applicationId).each do |item|
@@ -90,12 +87,54 @@ class Deployment
   def cancel
   end
   
+  def applicationExists?(application)
+    response = list_app(application)
+    if (response.code.to_i == 200)
+      return true
+    end
+      return false
+  end
+      
+  def create_app(application)
+    HttpUtil.post(@url + MarathonDefaults::MARATHON_APPS_REST_PATH,application.json)
+  end
+  
+  def update_app(application,force=false)
+    url = @url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id
+    url += force ? '?force=true' : ''
+    $LOG.debug("Updating app #{application.id}  #{url}")
+    return HttpUtil.put(url,application.json)
+  end
+  
+  def rolling_restart(application)
+    url = @url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id + '/restart'
+    $LOG.debug("Calling marathon api with url: #{url}") 
+    response = HttpUtil.post(url,{})
+    $LOG.info("Restart of #{application.id} returned status code: #{response.code}")
+    $LOG.info(JSON.pretty_generate(JSON.parse(response.body)))
+  end
+  
+  def get_deployment_id_for_application(application)
+    response = list_app(application)
+    payload = Utils.response_body(response)
+    return payload[:app][:deployments].first[:id] unless (payload[:app].nil?)
+    return nil
+  end
+  
   private
   
+  def list_all
+    HttpUtil.get(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH)
+  end  
+  
   def get_deployment_ids
-    response = list
+    response = list_all
     payload = JSON.parse(response.body)
     return payload.collect { |d| d['id'] }
+  end
+  
+  def list_app(application)
+    HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id)
   end
   
   def deployment_string(deploymentJsonObject)  
@@ -114,18 +153,17 @@ class Deployment
     end  
    return string + "-" * 100 
   end
-  
+    
   def deployments_for_deployment_id(deploymentId)
-    response = list
+    response = list_all
     payload = JSON.parse(response.body)
     return payload.find_all { |d| d['id'] == deploymentId }
   end
   
   def deployments_for_application_id(applicationId)
-    response = list
+    response = list_all
     payload = JSON.parse(response.body)
     return payload.find_all { |d| d['affectedApps'].include?('/' + applicationId) }
   end
   
-
 end
