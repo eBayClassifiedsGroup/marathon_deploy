@@ -14,10 +14,4 @@ id: content-webapp
 instances: 1
 mem: 32
 uris: []
-healthChecks:
-- gracePeriodSeconds: 30
-  intervalSeconds: 10
-  maxConsecutiveFailures: 3
-  portIndex: 0
-  protocol: TCP
-  timeoutSeconds: 30
+healthChecks: []

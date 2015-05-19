@@ -19,10 +19,8 @@ class Deployment
     return TIMEOUT
   end
   
-  def versions(application)
-    puts "VERSIONS"    
-    if (!applicationExists?(application)) 
-      puts "GOT IN HERE"  
+  def versions(application)   
+    if (!applicationExists?(application))  
       response = HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id + '/versions')  
       response_body = Utils.response_body(response)
       return response_body[:versions]
@@ -98,9 +96,7 @@ class Deployment
   def cancel(deploymentId,force=false)
     raise Error::BadURLError, "deploymentId must be specified to cancel deployment", caller if (deploymentId.empty?)
     if (running_for_deployment_id?(deploymentId))
-      puts "GOT INSTIDE THE CANCEL FUNCTION"
-      results = HttpUtil.delete(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH + '/' + deploymentId + "?force=#{force}")
-      puts "STATUS CODE #{results.code} "
+      return HttpUtil.delete(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH + '/' + deploymentId + "?force=#{force}")
     end
   end
   
@@ -141,7 +137,6 @@ class Deployment
   # TODO
   def is_healthy?(application)
     get_health_for_app(application)
-    return true
   end
   
   private
@@ -149,12 +144,18 @@ class Deployment
   # check for defined health checks
   # if defined health check, report on health statistics
   def get_health_for_app(application)
-    puts "######### GET HEALTH FOR APP #########"
+    if(health_checks_defined?(application))
+      puts "FOUND HEALTH CHECKS DEFINED .... DOING CHECKS"
+    else
+      puts "HEALTH CHECKS NOT! DEFINED"
+      return nil
+    end
+  end
+  
+  def health_checks_defined?(application)
     response = list_app(application)
     response_body = Utils.response_body(response)
-    puts "TYPE?"
-    puts JSON.pretty_generate(response_body[:app][:healthChecks])
-    puts response_body[:app][:healthChecks].empty?
+    return response_body[:app][:healthChecks].size == 0 ? false : true
   end
   
   def list_all

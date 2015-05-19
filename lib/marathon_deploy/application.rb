@@ -40,11 +40,15 @@ class Application
       raise Error::MissingMarathonAttributesError, message, caller
     end
     
+ 
+    @deployfile = deployfile 
+    
+    process_macros    
+    
     @json =  Utils.deep_symbolize(@json)
-    @deployfile = deployfile  
     
     add_identifier
-    process_macros  
+   
   end
   
   def overlay_preproduction_settings

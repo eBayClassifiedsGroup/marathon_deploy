@@ -34,7 +34,6 @@ class MarathonClient
 
   def deploy
     deployment = Deployment.new(@marathon_url)
-    puts deployment.versions(application)
     $LOG.info("Checking for running deployments of application #{application.id}")
     begin
       deployment.wait_for_application_id(application.id, "Deployment already running for application #{application.id}")
@@ -82,7 +81,8 @@ class MarathonClient
       raise Error::DeploymentError, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
     end 
      
-    deployment.is_healthy?(application)
+    puts "IS HEALTHY?"
+    puts deployment.is_healthy?(application)
     # TODO
     # POLL FOR HEALTH
     # DO HEALTH CHECK AND POLL UNTIL HEALTHY
