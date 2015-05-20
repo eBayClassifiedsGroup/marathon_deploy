@@ -1,10 +1,13 @@
 require 'marathon_deploy/utils'
+require 'marathon_deploy/error'
 require 'logger'
 
 module MarathonDefaults
  
   DEPLOYMENT_RECHECK_INTERVAL = 3
-  DEPLOYMENT_TIMEOUT = 120 #300
+  DEPLOYMENT_TIMEOUT = 300
+  HEALTHY_WAIT_TIMEOUT = 300
+  HEALTHY_WAIT_RECHECK_INTERVAL = 3
   PRODUCTION_ENVIRONMENT_NAME = 'PRODUCTION'
   DEFAULT_ENVIRONMENT_NAME = 'INTEGRATION'
   DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://192.168.59.103:8080']
@@ -50,8 +53,7 @@ module MarathonDefaults
     json = Utils.symbolize(json)
     
     if (!json.key?(:env))
-      $LOG.error("no env attribute found in deployment file") 
-      exit!
+      raise Error::MissingMarathonAttributesError, "no env attribute found in deployment file", caller 
     end
     
     missing = []

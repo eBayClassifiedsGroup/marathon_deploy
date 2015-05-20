@@ -67,7 +67,7 @@ class Application
   
   def id
     if (@json[:id])
-      @json[:id]
+      return @json[:id]
     end
   end
   
@@ -80,7 +80,14 @@ class Application
       raise Error::BadFormatError, "argument must be a hash", caller
     end
   end
+    
+  def instances
+    if (@json[:instances])
+      return @json[:instances]
+    end    
+  end  
   
+  ######## PRIVATE #########
   private
   
   def process_macros

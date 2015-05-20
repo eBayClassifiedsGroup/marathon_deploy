@@ -3,13 +3,6 @@ require 'marathon_deploy/deployment'
 require 'marathon_deploy/utils'
 require 'marathon_deploy/marathon_defaults'
 
-# http://www.mudskipper-solutions.com/home/how-to-send-jsonhttp-using-ruby
-# http://www.bls.gov/developers/api_ruby.htm
-# https://gist.github.com/amirrajan/2369851
-# http://mikeebert.tumblr.com/post/56891815151/posting-json-with-net-http
-
-# https://github.com/augustl/net-http-cheat-sheet
-
 class MarathonClient
 
   attr_reader :marathon_url, :options
@@ -33,61 +26,48 @@ class MarathonClient
   end
 
   def deploy
-    deployment = Deployment.new(@marathon_url)
-    $LOG.info("Checking for running deployments of application #{application.id}")
+    
+    deployment = Deployment.new(@marathon_url,application)
+    
+    $LOG.info("Checking if any deployments are already running for application #{application.id}")    
     begin
-      deployment.wait_for_application_id(application.id, "Deployment already running for application #{application.id}")
+      deployment.wait_for_application("Deployment already running for application #{application.id}")
     rescue Timeout::Error => e
-      $LOG.error("Timed out waiting for existing deployment of #{application.id} to finish. Could not start new deployment.")
-      $LOG.error("Check marathon #{@marathon_url + '/#deployments'} for stuck deployments!")
-      exit!
-    end 
+      raise Timeout::Error, "Timed out after #{deployment.timeout}s waiting for existing deployment of #{application.id} to finish. Check marathon #{@marathon_url + '/#deployments'} for stuck deployments!", caller
+    end
     
     $LOG.info("Starting deployment of #{application.id}")
 
-    if (deployment.applicationExists?(application))
-      
+    # if application with this ID already exists
+    if (deployment.applicationExists?)  
       $LOG.info("#{application.id} already exists. Performing update.")
-      response = deployment.update_app(application)
-      
-      if ((300..999).include?(response.code.to_i))
-        raise Error::DeploymentError, "Deployment return response code #{response.code}", caller
-      end
-      
-      response_body =  Utils.response_body(response) 
-      deploymentId = response_body[:deploymentId]
-
+      response = deployment.update_app      
+         
+    # if no application with this ID is seen in marathon
     else     
-      response = deployment.create_app(application)
-      
-      if ((300..999).include?(response.code.to_i))
-        raise Error::DeploymentError, "Deployment return response code #{response.code}", caller
-      end
-      
-      response_body = Utils.response_body(response)
-      deploymentId = deployment.get_deployment_id_for_application(application)
+      response = deployment.create_app
     end
     
-    unless (deploymentId.nil?)
-      $LOG.info("Deployment running for #{application.id} with deploymentId #{deploymentId}")
+    if ((300..999).include?(response.code.to_i))
+      $LOG.error("Deployment response body => " + JSON.pretty_generate(JSON.parse(response.body)))
+      raise Error::DeploymentError, "Deployment return response code #{response.code}", caller
     end
+    
+    $LOG.info("Deployment started for #{application.id} with deployment id #{deployment.deploymentId}") unless (deployment.deploymentId.nil?)
     
     begin
-      deployment.wait_for_deployment_id(deploymentId) 
+      deployment.wait_for_deployment_id 
     rescue Timeout::Error => e
-      $LOG.error("Timed out waiting for deployment of #{application.id} to complete.")
-      $LOG.error("Canceling deploymentId #{deploymentId} and rolling back!")
-      deployment.cancel(deploymentId)
-      raise Error::DeploymentError, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
+      $LOG.error("Timed out waiting for deployment of #{application.id} to complete. Canceling deploymentId #{deployment.deploymentId} and rolling back!")
+      deployment.cancel(deployment.deploymentId)
+      raise Timeout::Error, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
     end 
      
-    puts "IS HEALTHY?"
-    puts deployment.is_healthy?(application)
-    # TODO
-    # POLL FOR HEALTH
-    # DO HEALTH CHECK AND POLL UNTIL HEALTHY
-    # HEALTHY exit OK
-    # SICK exit NOT OK
+    begin
+      deployment.wait_until_healthy
+    rescue Timeout::Error => e
+      raise Timeout::Error, "Timed out after #{deployment.healthcheck_timeout}s waiting for #{application.instances} instances of #{application.id} to become healthy", caller
+    end
 
   end
 end

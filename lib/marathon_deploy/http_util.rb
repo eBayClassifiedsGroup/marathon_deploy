@@ -63,6 +63,7 @@ module HttpUtil
     begin
     http = Net::HTTP.new(uri.host, uri.port)
     req = Net::HTTP::Get.new(uri.request_uri)
+    req["Content-Type"] = "application/json"
     response = http.request(req)
     rescue  Errno::ECONNREFUSED => e
       message = "Error calling marathon api: #{e.message}"

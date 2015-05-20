@@ -11,7 +11,7 @@ env:
   SERVICE_8009_NAME: public-search-germany-webapp
   SERVICE_8009_TAGS: ajp
 id: content-webapp
-instances: 1
+instances: 3
 mem: 32
 uris: []
 healthChecks:

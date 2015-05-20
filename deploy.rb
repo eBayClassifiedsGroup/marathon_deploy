@@ -95,11 +95,11 @@ marathon_endpoints.each do |marathon_url|
     client = MarathonClient.new(marathon_url)
     client.application = application
     client.deploy  
-  rescue Error::BadURLError => e
-    $LOG.error(e)
-    exit! 
+  rescue Error::MissingMarathonAttributesError,Error::BadURLError, Timeout::Error => e
+    $LOG.error(e.message)
+    exit!
   rescue Error::DeploymentError => e
-    $LOG.error("Deployment of #{application} did not complete successfully => #{e}")
+    $LOG.error("Deployment of #{application} failed => #{e}")
     exit!
   rescue SocketError, Error::MarathonError  => e
     $LOG.error("Problem talking to marathon endpoint => #{marathon_url} (#{e.message})")
