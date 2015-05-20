@@ -50,11 +50,12 @@ class MarathonClient
     
     if ((300..999).include?(response.code.to_i))
       $LOG.error("Deployment response body => " + JSON.pretty_generate(JSON.parse(response.body)))
-      raise Error::DeploymentError, "Deployment return response code #{response.code}", caller
+      raise Error::DeploymentError, "Deployment returned response code #{response.code}", caller
     end
     
     $LOG.info("Deployment started for #{application.id} with deployment id #{deployment.deploymentId}") unless (deployment.deploymentId.nil?)
     
+    # wait for deployment to finish, according to marathon deployment API call
     begin
       deployment.wait_for_deployment_id 
     rescue Timeout::Error => e
@@ -63,6 +64,7 @@ class MarathonClient
       raise Timeout::Error, "Deployment of #{application.id} timed out after #{deployment.timeout} seconds", caller
     end 
      
+    # wait for all instances with defined health checks to be healthy
     begin
       deployment.wait_until_healthy
     rescue Timeout::Error => e
