@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'marathon_deploy/marathon_defaults'
 require 'marathon_deploy/marathon_client'
 require 'marathon_deploy/error'

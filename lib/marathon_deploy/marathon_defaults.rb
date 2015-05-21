@@ -35,7 +35,7 @@ module MarathonDefaults
     APPLICATION_NAME
   ]
   
-  #@@required_marathon_attributes = %w[id env container healthChecks args].map(&:to_sym)
+  #@@required_marathon_attributes = %w[id env container healthChecks args storeUrls].map(&:to_sym)
   @@required_marathon_attributes = %w[id].map(&:to_sym)
    
   def self.missing_attributes(json)
