@@ -15,5 +15,7 @@ module Error
   class BadFormatError < MarathonError; end
   
   class DeploymentError < MarathonError ; end
+    
+  class UndefinedMacroError < MarathonError ; end
 
 end

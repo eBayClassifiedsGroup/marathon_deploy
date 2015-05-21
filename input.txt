@@ -1,0 +1,66 @@
+{
+    "args": [
+        "properties.py && FOO=\"`cat /opt/etc/public-search-germany-webapp-%FIRST_VAR%.properties | grep -v '^\\s*#' | grep -E '.+=.+'`\"; echo $FOO; echo; env $FOO; echo; env %SECOND_VAR%$FOO hostName=$HOSTNAME backend.instance.name=$HOSTNAME java -Dhttp.port=8080 -Dajp.port=8009 -Dinstance.confdir=file:///opt/etc -Dbackend.logdir=$MESOS_SANDBOX -Dlog.rootDir=$MESOS_SANDBOX -DlogDir=$MESOS_SANDBOX $CMD_OPTS -Xmx$JAVA_XMX -Xms$JAVA_XMS -jar $MESOS_SANDBOX/public-search-germany-webapp*.jar"
+    ],
+    "cmd": null,
+    "container": {
+        "docker": {
+            "image": "dockerregistry.mobile.rz/mobile-java8:latest",
+            "network": "BRIDGE",
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 0,
+                    "protocol": "tcp"
+                },
+                {
+                    "containerPort": 8009,
+                    "hostPort": 0,
+                    "protocol": "tcp"
+                }
+            ]
+        },
+        "type": "DOCKER"
+    },
+    "cpus": 0.1,
+    "env": {
+        "APPLICATION_NAME": "public-search-germany-webapp",
+        "CMD_OPTS": "",
+        "CONFIG_ASSEMBLER_BASE_URL": "http://mobile-config-assembler.service.consul/config-assembler",
+        "DATACENTER_NUMBER": "44",
+        "JAVA_XMS": "252m",
+        "JAVA_XMX": "504m",
+        "SERVERCLASS_NAME": "pubse",
+        "SERVICE_8009_NAME": "public-search-germany-webapp",
+        "SERVICE_8009_TAGS": "ajp",
+        "SERVICE_8080_CHECK_SCRIPT": "curl --fail --silent $HOST_IP:%SERVICE_PORT%/fz/release-info",
+        "SERVICE_8080_NAME": "public-search-germany-webapp",
+        "SERVICE_8080_TAGS": "http,haproxy"
+    },
+    "healthChecks": [
+        {
+            "gracePeriodSeconds": 30,
+            "intervalSeconds": 10,
+            "maxConsecutiveFailures": 3,
+            "portIndex": 0,
+            "protocol": "TCP",
+            "timeoutSeconds": 30
+        },
+        {
+            "gracePeriodSeconds": 30,
+            "intervalSeconds": 10,
+            "maxConsecutiveFailures": 3,
+            "path": "/%CONTEXT%%TRICKY%/release-info",
+            "portIndex": 0,
+            "protocol": "HTTP",
+            "timeoutSeconds": 30
+        }
+    ],
+    "id": "public-search-germany-webapp",
+    "instances": 4,
+    "mem": 512,
+    "storeUrls": [
+        "http://maven-download.mobile.rz/maven/hosted-mobile-deployment-productive-releases/de/mobile/public-search-germany-webapp/ecs-1558-gb70c745/public-search-germany-webapp-ecs-1558-gb70c745.jar"
+    ],
+    "uris": []
+}
