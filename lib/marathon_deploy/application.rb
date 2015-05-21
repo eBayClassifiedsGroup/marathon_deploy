@@ -39,14 +39,9 @@ class Application
       message = "#{deployfile} is missing required environment variables: #{missing_envs.join(',')}"
       raise Error::MissingMarathonAttributesError, message, caller
     end
-    
- 
-    @deployfile = deployfile 
-    
-    process_macros    
-    
-    @json =  Utils.deep_symbolize(@json)
-    
+     
+    @deployfile = deployfile                
+    @json =  Utils.deep_symbolize(@json)    
     add_identifier
    
   end
@@ -86,18 +81,5 @@ class Application
       return @json[:instances]
     end    
   end  
-  
-  ######## PRIVATE #########
-  private
-  
-  def process_macros
-    puts "### PROCESSING MACROS ###"
-  end
-  
-  def collect_macro_variables
-  end
-  
-  def validate_environment_variables(envs)
-  end
      
 end

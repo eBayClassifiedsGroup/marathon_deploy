@@ -16,6 +16,6 @@ module Error
   
   class DeploymentError < MarathonError ; end
     
-  class UndefinedMacroError < MarathonError ; end
+  class UndefinedMacroError < MarathonError ; end     
 
 end

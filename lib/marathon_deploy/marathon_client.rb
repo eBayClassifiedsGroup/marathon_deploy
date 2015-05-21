@@ -65,6 +65,10 @@ class MarathonClient
     end 
      
     # wait for all instances with defined health checks to be healthy
+    if (!deployment.health_checks_defined?)
+      $LOG.warn("No health checks were defined for application #{application.id}. No health checking will be performed.")
+    end
+    
     begin
       deployment.wait_until_healthy
     rescue Timeout::Error => e

@@ -143,7 +143,13 @@ class Deployment
     response = HttpUtil.post(url,{})
     $LOG.info("Restart of #{@application.id} returned status code: #{response.code}")
     $LOG.info(JSON.pretty_generate(JSON.parse(response.body)))
-  end    
+  end  
+  
+  def health_checks_defined?
+    response = list_app
+    response_body = Utils.response_body(response)
+    return response_body[:app][:healthChecks].size == 0 ? false : true
+  end  
   
   ####### PRIVATE METHODS ##########
   private
@@ -183,13 +189,7 @@ class Deployment
     response_body = Utils.response_body(response)
     return response_body[:app][:tasks].collect { |task| task[:healthCheckResults]}
   end
-  
-  def health_checks_defined?
-    response = list_app
-    response_body = Utils.response_body(response)
-    return response_body[:app][:healthChecks].size == 0 ? false : true
-  end
-  
+    
   def get_deployment_id
     response = list_app
     payload = Utils.response_body(response)

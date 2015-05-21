@@ -63,14 +63,9 @@ end
  
 begin
   application = Application.new(deployfile)
-rescue Error::UnsupportedFileExtension => e
-  $LOG.error(e)
-  exit!
-rescue Error::IOError => e
-  $LOG.error(e)
-  exit!
-rescue Error::MissingMarathonAttributesError => e
-  $LOG.error(e)
+rescue Error::IOError, Error::UndefinedMacroError,Error::MissingMarathonAttributesError,Error::UnsupportedFileExtension  => e
+  $LOG.debug(e)
+  $LOG.error(e.message)
   exit!
 end
 

@@ -28,6 +28,7 @@
         "CMD_OPTS": "",
         "CONFIG_ASSEMBLER_BASE_URL": "http://mobile-config-assembler.service.consul/config-assembler",
         "DATACENTER_NUMBER": "44",
+	"MACRO_TEST": "this should be defined: %%MACRO_TEST%%",
         "JAVA_XMS": "252m",
         "JAVA_XMX": "504m",
         "SERVERCLASS_NAME": "pubse",

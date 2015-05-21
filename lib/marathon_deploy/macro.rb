@@ -1,9 +1,13 @@
+require 'marathon_deploy/error'
+
 module Macro
+  
+  MACRO_BOUNDARY = '%%'
   
   def self.get_macros(data)
     macros = Array.new
-    IO.foreach(data) do |line|
-      (macros  << line.scan(/(%\w+%)/)).flatten!
+    data.each do |line|
+      (macros  << line.scan(/(#{MACRO_BOUNDARY}\w+#{MACRO_BOUNDARY})/)).flatten!
     end
     return macros
   end
@@ -37,7 +41,7 @@ module Macro
   end
   
   def self.strip(str)
-    return str.gsub('%','')
+    return str.gsub(MACRO_BOUNDARY,'')
   end
   
   def self.expand_macros(data)
@@ -45,16 +49,23 @@ module Macro
     macros = get_macros(data)
     undefined = get_undefined_macros(macros)
     if (!undefined.empty?)
-      raise UndefinedMacroError, "macros found without defined Environment variables: #{undefined.join(',')}", caller
+      raise Error::UndefinedMacroError, "macros found in deploy file without defined environment variables: #{undefined.uniq.join(',')}", caller
     end
   
-    IO.foreach(data) do |line|
+    data.each do |line|
       macros.each { |m| line.gsub!(m,ENV[strip(m)]) }
       processed += line
     end
     return processed  
   end
   
-  private_class_method :get_macros, :get_env_keys, :strip, :has_env?, :get_undefined_macros, :env_defined?
+  def self.process_macros(filename)
+    file = File.open(filename,'r')
+    data = file.readlines
+    file.close()
+    return expand_macros(data)
+  end
+  
+  private_class_method :get_macros, :get_env_keys, :strip, :has_env?, :get_undefined_macros, :env_defined?, :expand_macros
   
 end
