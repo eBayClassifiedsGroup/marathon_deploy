@@ -1,6 +1,7 @@
 require 'marathon_deploy/marathon_defaults'
 
-class Environment
+module MarathonDeploy
+  class Environment
   
   attr_reader :name
   
@@ -24,5 +25,7 @@ class Environment
   
   def to_s
     @name
+  end
+  
   end
 end

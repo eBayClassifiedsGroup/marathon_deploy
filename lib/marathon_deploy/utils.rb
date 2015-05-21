@@ -1,4 +1,5 @@
-module Utils
+module MarathonDeploy
+  module Utils
   
   def self.symbolize(data) 
     data.inject({}){|h,(k,v)| h[k.to_sym] = v; h}
@@ -27,5 +28,6 @@ module Utils
     end
     return nil
   end
-  
+ 
+  end 
 end

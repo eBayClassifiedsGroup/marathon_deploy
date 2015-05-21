@@ -4,13 +4,12 @@ cpus: 0.5
 env:
   APPLICATION_NAME: public-search-germany-webapp
   CONFIG_ASSEMBLER_BASE_URL: http://mobile-config-assembler.service.consul/config-assembler
-  DATACENTER_NUMBER: '666'
   JAVA_XMS: 252m
   JAVA_XMX: 504m
   SERVERCLASS_NAME: pubse
   SERVICE_8009_NAME: public-search-germany-webapp
   SERVICE_8009_TAGS: ajp
 id: public-search-germany-webapp
-instances: 15
+instances: 6
 mem: 32
 uris: []

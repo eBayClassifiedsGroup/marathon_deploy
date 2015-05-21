@@ -2,7 +2,8 @@ require 'yaml'
 require 'json'
 require 'marathon_deploy/macro'
 
-module YamlJson
+module MarathonDeploy
+  module YamlJson
   
   def self.yaml2json(filename, process_macros=true)  
     if (process_macros)
@@ -42,4 +43,5 @@ module YamlJson
     return JSON.parse(data)
   end  
   
+  end
 end

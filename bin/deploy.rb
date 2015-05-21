@@ -11,11 +11,11 @@ require 'logger'
 options = {}
   
 # DEFAULTS
-options[:deployfile] = MarathonDefaults::DEFAULT_DEPLOYFILE
-options[:verbose] = MarathonDefaults::DEFAULT_LOGLEVEL
-options[:environment] = MarathonDefaults::DEFAULT_ENVIRONMENT_NAME
+options[:deployfile] = MarathonDeploy::MarathonDefaults::DEFAULT_DEPLOYFILE
+options[:verbose] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGLEVEL
+options[:environment] = MarathonDeploy::MarathonDefaults::DEFAULT_ENVIRONMENT_NAME
 options[:marathon_endpoints] = nil
-options[:logfile] = MarathonDefaults::DEFAULT_LOGFILE
+options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
   
 OptionParser.new do |opts|
   opts.banner = "Usage: deploy.rb [options]"
@@ -50,22 +50,22 @@ $LOG = options[:logfile] ? Logger.new(options[:logfile]) : Logger.new(STDOUT)
 $LOG.level = options[:verbose]
 
 deployfile = options[:deployfile]
-environment = Environment.new(options[:environment])
+environment = MarathonDeploy::Environment.new(options[:environment])
   
 marathon_endpoints = Array.new
 if (options[:marathon_endpoints].nil?)
   if (environment.is_production?)
-    marathon_endpoints = MarathonDefaults::DEFAULT_PRODUCTION_MARATHON_ENDPOINTS
+    marathon_endpoints = MarathonDeploy::MarathonDefaults::DEFAULT_PRODUCTION_MARATHON_ENDPOINTS
   else
-    marathon_endpoints = MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
+    marathon_endpoints = MarathonDeploy::MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
   end
 else
   marathon_endpoints = options[:marathon_endpoints]
 end
  
 begin
-  application = Application.new(deployfile)
-rescue Error::IOError, Error::UndefinedMacroError,Error::MissingMarathonAttributesError,Error::UnsupportedFileExtension  => e
+  application = MarathonDeploy::Application.new(deployfile)
+rescue MarathonDeploy::Error::IOError, MarathonDeploy::Error::UndefinedMacroError,MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::UnsupportedFileExtension  => e
   $LOG.debug(e)
   $LOG.error(e.message)
   exit!
@@ -73,7 +73,7 @@ end
 
 begin
   application.add_envs({ :APPLICATION_NAME => application.id, :ENVIRONMENT => environment})
-rescue Error::BadFormatError => e
+rescue MarathonDeploy::Error::BadFormatError => e
   $LOG.error(e)
   exit!
 end
@@ -89,16 +89,16 @@ puts "#" * 100
 # deploy to each endpoint
 marathon_endpoints.each do |marathon_url|
   begin
-    client = MarathonClient.new(marathon_url)
+    client = MarathonDeploy::MarathonClient.new(marathon_url)
     client.application = application
     client.deploy  
-  rescue Error::MissingMarathonAttributesError,Error::BadURLError, Timeout::Error => e
+  rescue MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::BadURLError, Timeout::Error => e
     $LOG.error(e.message)
     exit!
-  rescue Error::DeploymentError => e
+  rescue MarathonDeploy::Error::DeploymentError => e
     $LOG.error("Deployment of #{application} failed => #{e}")
     exit!
-  rescue SocketError, Error::MarathonError  => e
+  rescue SocketError, MarathonDeploy::Error::MarathonError => e
     $LOG.error("Problem talking to marathon endpoint => #{marathon_url} (#{e.message})")
     exit!
   end

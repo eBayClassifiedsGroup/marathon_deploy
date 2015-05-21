@@ -2,17 +2,19 @@
 cmd: while true ; do echo "i got probed ..." ; /bin/nc -l -p $PORT0 ; done
 cpus: 0.5
 env:
+  A_MACRO_TEST: %%SPECIAL_PROPERTY%%
   APPLICATION_NAME: public-search-germany-webapp
   CONFIG_ASSEMBLER_BASE_URL: http://mobile-config-assembler.service.consul/config-assembler
   DATACENTER_NUMBER: '666'
   JAVA_XMS: 252m
   JAVA_XMX: 504m
-  SPECIAL_PROPERTY: %%SPECIAL_PROPERTY%%
+  SPECIAL_PROPERTY: %%SPECIAL_PROPERTY%%%%SPECIAL_PROPERTY%%
   SERVERCLASS_NAME: pubse
   SERVICE_8009_NAME: public-search-germany-webapp
   SERVICE_8009_TAGS: ajp
+  ANOTHER_MACRO_TEST: %%SPECIAL_PROPERTY%%
 id: content-webapp
-instances: 3
+instances: 6
 mem: 32
 uris: []
 healthChecks:

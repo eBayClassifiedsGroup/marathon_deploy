@@ -2,15 +2,16 @@ require 'marathon_deploy/utils'
 require 'marathon_deploy/error'
 require 'logger'
 
-module MarathonDefaults
+module MarathonDeploy
+  module MarathonDefaults
  
   DEPLOYMENT_RECHECK_INTERVAL = 3
   DEPLOYMENT_TIMEOUT = 300
-  HEALTHY_WAIT_TIMEOUT = 300
+  HEALTHY_WAIT_TIMEOUT = 10 #300
   HEALTHY_WAIT_RECHECK_INTERVAL = 3
   PRODUCTION_ENVIRONMENT_NAME = 'PRODUCTION'
   DEFAULT_ENVIRONMENT_NAME = 'INTEGRATION'
-  DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://192.168.59.103:8080']
+  DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://localhost:8080']
   DEFAULT_PRODUCTION_MARATHON_ENDPOINTS = ['http://paasmaster46-1.mobile.rz:8080']
   DEFAULT_DEPLOYFILE = 'deploy.yaml'
   DEFAULT_LOGFILE = false
@@ -30,10 +31,7 @@ module MarathonDefaults
     :JAVA_XMX => "128m"
   }  
   
-  @@required_marathon_env_variables = %w[
-    DATACENTER_NUMBER
-    APPLICATION_NAME
-  ]
+  @@required_marathon_env_variables = %w[]
   
   #@@required_marathon_attributes = %w[id env container healthChecks args storeUrls].map(&:to_sym)
   @@required_marathon_attributes = %w[id].map(&:to_sym)
@@ -80,4 +78,5 @@ module MarathonDefaults
       return json
   end
   
+  end
 end

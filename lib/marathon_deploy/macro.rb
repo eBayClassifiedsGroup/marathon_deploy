@@ -1,6 +1,7 @@
 require 'marathon_deploy/error'
 
-module Macro
+module MarathonDeploy
+  module Macro
   
   MACRO_BOUNDARY = '%%'
   
@@ -25,13 +26,13 @@ module Macro
   end
   
   def self.get_undefined_macros(macros)
-    raise ArgumentError, "argument must be an array", caller if (!macros.class == Array)
+    raise ArgumentError, "Argument must be an array", caller if (!macros.class == Array)
     undefined = Array.new
     return macros.select { |m| !has_env?(m) }
   end
   
   def self.has_env?(macro)
-    raise ArgumentError, "argument must be a String", caller if (!macro.class == String)
+    raise ArgumentError, "Argument must be a String", caller if (!macro.class == String)
     env_name = strip(macro)
     if (env_defined?(strip(env_name)))
       return true
@@ -46,10 +47,11 @@ module Macro
   
   def self.expand_macros(data)
     processed = ""
-    macros = get_macros(data)
+    macros = get_macros(data).uniq
+    $LOG.debug("Macros found in deploy file: #{macros.join(',')}")
     undefined = get_undefined_macros(macros)
     if (!undefined.empty?)
-      raise Error::UndefinedMacroError, "macros found in deploy file without defined environment variables: #{undefined.uniq.join(',')}", caller
+      raise Error::UndefinedMacroError, "Macros found in deploy file without defined environment variables: #{undefined.join(',')}", caller
     end
   
     data.each do |line|
@@ -68,4 +70,5 @@ module Macro
   
   private_class_method :get_macros, :get_env_keys, :strip, :has_env?, :get_undefined_macros, :env_defined?, :expand_macros
   
+  end
 end

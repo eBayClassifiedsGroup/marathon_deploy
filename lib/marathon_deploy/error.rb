@@ -1,5 +1,6 @@
-module Error
-  
+module MarathonDeploy
+  module Error
+    
   class MarathonError < StandardError; end
    
   class TimeoutError < MarathonError; end
@@ -18,4 +19,5 @@ module Error
     
   class UndefinedMacroError < MarathonError ; end     
 
+  end
 end

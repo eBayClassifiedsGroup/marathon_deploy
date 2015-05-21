@@ -3,7 +3,8 @@ require 'marathon_deploy/deployment'
 require 'marathon_deploy/utils'
 require 'marathon_deploy/marathon_defaults'
 
-class MarathonClient
+module MarathonDeploy
+  class MarathonClient
 
   attr_reader :marathon_url, :options
   attr_accessor :application
@@ -33,7 +34,7 @@ class MarathonClient
     begin
       deployment.wait_for_application("Deployment already running for application #{application.id}")
     rescue Timeout::Error => e
-      raise Timeout::Error, "Timed out after #{deployment.timeout}s waiting for existing deployment of #{application.id} to finish. Check marathon #{@marathon_url + '/#deployments'} for stuck deployments!", caller
+      raise Timeout::Error, "Timed out after #{deployment.timeout}s waiting for existing deployment of #{application.id} to finish. Check marathon ui #{@marathon_url + '/#deployments'} for stuck deployments!", caller
     end
     
     $LOG.info("Starting deployment of #{application.id}")
@@ -72,8 +73,9 @@ class MarathonClient
     begin
       deployment.wait_until_healthy
     rescue Timeout::Error => e
-      raise Timeout::Error, "Timed out after #{deployment.healthcheck_timeout}s waiting for #{application.instances} instances of #{application.id} to become healthy", caller
+      raise Timeout::Error, "Timed out after #{deployment.healthcheck_timeout}s waiting for #{application.instances} instances of #{application.id} to become healthy. Check marathon ui #{@marathon_url + '/#deployments'} for more information.", caller
     end
-
+  end
+  
   end
 end

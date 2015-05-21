@@ -3,7 +3,8 @@ require 'marathon_deploy/utils'
 require 'marathon_deploy/marathon_defaults'
 require 'timeout'
 
-class Deployment
+module MarathonDeploy
+  class Deployment
   
   DEPLOYMENT_RECHECK_INTERVAL = MarathonDefaults::DEPLOYMENT_RECHECK_INTERVAL
   DEPLOYMENT_TIMEOUT = MarathonDefaults::DEPLOYMENT_TIMEOUT
@@ -57,7 +58,7 @@ class Deployment
         #STDOUT.puts "" if ( $LOG.level == 1 )
         if (deployment_seen)
           elapsedTime = '%.2f' % (Time.now - startTime)
-          $LOG.info("Deployment with deploymentId #{@deploymentId} ended (Total time #{elapsedTime}s )")  
+          $LOG.info("Deployment with deploymentId #{@deploymentId} ended (Total deployment time #{elapsedTime}s)")  
         end
       end    
   end
@@ -83,20 +84,25 @@ class Deployment
       end    
   end
   
-  def wait_until_healthy    
+  def wait_until_healthy  
+    startTime = Time.now  
     Timeout::timeout(HEALTHY_WAIT_TIMEOUT) do
       loop do
         break if (!health_checks_defined?)
         sick = get_alive("false")
+        elapsedTime = '%.2f' % (Time.now - startTime)
         if (!sick.empty?)
-          $LOG.info("#{sick.size}/#{@application.instances} instances are not healthy => " + sick.join(','))
+          $LOG.info("#{sick.size}/#{@application.instances} instances are not healthy, retrying in #{HEALTHY_WAIT_RECHECK_INTERVAL}s (elapsed time #{elapsedTime}s)")
+          $LOG.debug("Sick instances: " + sick.join(','))
         else
           healthy = get_alive("true")
           if (healthy.size == @application.instances)
-            $LOG.info("#{healthy.size}/#{@application.instances} instances are healthy => " + healthy.join(','))
+            elapsedTime = '%.2f' % (Time.now - startTime)
+            $LOG.info("#{healthy.size} of #{@application.instances} expected instances are healthy (Total health-check time #{elapsedTime}s).")
+            $LOG.debug("Healthy instances running: " + healthy.join(','))
             break
           else
-            $LOG.info("#{healthy.size}/#{@application.instances} healthy instances seen, retrying")
+            $LOG.info("#{healthy.size} healthy instances seen, #{@application.instances} healthy instances expected, retrying in in #{HEALTHY_WAIT_RECHECK_INTERVAL}s")
           end
         end      
         sleep(HEALTHY_WAIT_RECHECK_INTERVAL)
@@ -105,8 +111,8 @@ class Deployment
   end
     
   def cancel(deploymentId,force=false)
-    raise Error::BadURLError, "deploymentId must be specified to cancel deployment", caller if (deploymentId.empty?)
-    if (running_for_deployment_id?(deploymentId))
+    raise ArgumentError, "deploymentId must be specified to cancel deployment", caller if (deploymentId.empty?)
+    if (running_for_deployment_id?)
       response = HttpUtil.delete(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH + deploymentId + "?force=#{force}")
       $LOG.debug("Cancellation response [#{response.code}] => " + JSON.pretty_generate(JSON.parse(response.body)))
     end
@@ -266,4 +272,5 @@ class Deployment
     return payload.find_all { |d| d['affectedApps'].include?('/' + @application.id) }
   end
   
+  end
 end

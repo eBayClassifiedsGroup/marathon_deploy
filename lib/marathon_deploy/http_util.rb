@@ -2,7 +2,8 @@ require 'net/http'
 require 'uri'
 require 'marathon_deploy/error'
 
-module HttpUtil
+module MarathonDeploy
+  module HttpUtil
 
   def self.put(url,payload)
     uri = construct_uri url 
@@ -88,4 +89,5 @@ module HttpUtil
     end
   end
   
+  end
 end

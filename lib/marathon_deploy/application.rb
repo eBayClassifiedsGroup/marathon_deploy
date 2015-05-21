@@ -3,7 +3,9 @@ require 'marathon_deploy/yaml_json'
 require 'marathon_deploy/error'
 require 'marathon_deploy/utils'
 
-class Application
+module MarathonDeploy
+  
+  class Application
   
   attr_reader :json, :id
   attr_accessor :envs
@@ -82,4 +84,5 @@ class Application
     end    
   end  
      
+  end
 end
