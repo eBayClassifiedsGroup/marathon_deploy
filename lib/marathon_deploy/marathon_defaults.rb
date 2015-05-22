@@ -10,7 +10,7 @@ module MarathonDeploy
   HEALTHY_WAIT_TIMEOUT = 300
   HEALTHY_WAIT_RECHECK_INTERVAL = 3
   PRODUCTION_ENVIRONMENT_NAME = 'PRODUCTION'
-  DEFAULT_ENVIRONMENT_NAME = 'INTEGRATION'
+  DEFAULT_ENVIRONMENT_NAME = 'PREPRODUCTION'
   DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://localhost:8080']
   DEFAULT_PRODUCTION_MARATHON_ENDPOINTS = ['http://paasmaster46-1.mobile.rz:8080']
   DEFAULT_DEPLOYFILE = 'deploy.yaml'
@@ -20,7 +20,7 @@ module MarathonDeploy
   MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
 
   @@preproduction_override = {
-    :instances => 20,
+    :instances => 5,
     :mem => 512,
     :cpus => 0.1      
   } 

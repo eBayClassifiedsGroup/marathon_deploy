@@ -5,6 +5,7 @@ require 'marathon_deploy/marathon_client'
 require 'marathon_deploy/error'
 require 'marathon_deploy/application'
 require 'marathon_deploy/environment'
+require 'marathon_deploy/version'
 require 'optparse'
 require 'logger'
 
@@ -12,14 +13,15 @@ options = {}
   
 # DEFAULTS
 options[:deployfile] = MarathonDeploy::MarathonDefaults::DEFAULT_DEPLOYFILE
-options[:verbose] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGLEVEL
+options[:debug] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGLEVEL
 options[:environment] = MarathonDeploy::MarathonDefaults::DEFAULT_ENVIRONMENT_NAME
-options[:marathon_endpoints] = nil
+options[:marathon_endpoints] = MarathonDeploy::MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
 options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
   
 OptionParser.new do |opts|
-  opts.banner = "Usage: deploy.rb [options]"
-
+  opts.banner = "Usage: #{$0} [options]"
+  opts.release =  MarathonDeploy::VERSION
+  
   opts.on("-u","--url MARATHON_URL(S)", Array, "Default: #{options[:marathon_endpoints]}") do |u|    
     options[:marathon_endpoints] = u  
   end
@@ -28,8 +30,13 @@ OptionParser.new do |opts|
     options[:logfile] = l  
   end
   
-  opts.on("-v", "--verbose", "Run verbosely") do |v|
-    options[:verbose] = Logger::DEBUG
+  opts.on("-d", "--debug", "Run in debug mode") do |d|
+    options[:debug] = Logger::DEBUG
+  end
+  
+  opts.on("-v", "--version", "Version info") do |v|
+    puts "#{$0} version #{opts.release}"
+    exit!
   end
   
   opts.on("-f", "--file DEPLOYFILE" ,"Deploy file with json or yaml file extension. Default: #{options[:deployfile]}") do |f|
@@ -47,7 +54,7 @@ OptionParser.new do |opts|
 end.parse!
 
 $LOG = options[:logfile] ? Logger.new(options[:logfile]) : Logger.new(STDOUT)
-$LOG.level = options[:verbose]
+$LOG.level = options[:debug]
 
 deployfile = options[:deployfile]
 environment = MarathonDeploy::Environment.new(options[:environment])
