@@ -16,6 +16,7 @@ container:
 env:
   SERVICE_TAGS: python,webapp,http,weight=100
   SERVICE_NAME: python
+  RELEASE_VERSION: %%RELEASE_VERSION%%
 healthChecks:
 - portIndex: 0
   protocol: TCP

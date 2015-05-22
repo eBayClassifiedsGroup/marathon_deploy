@@ -36,7 +36,7 @@ OptionParser.new do |opts|
   
   opts.on("-v", "--version", "Version info") do |v|
     puts "#{$0} version #{opts.release}"
-    exit!
+    exit
   end
   
   opts.on("-f", "--file DEPLOYFILE" ,"Deploy file with json or yaml file extension. Default: #{options[:deployfile]}") do |f|
