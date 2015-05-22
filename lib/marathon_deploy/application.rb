@@ -22,7 +22,7 @@ module MarathonDeploy
     case extension
       when '.json'
         @json = YamlJson.read_json(deployfile)
-      when '.yaml'
+      when '.yaml','.yml'
         @json = YamlJson.yaml2json(deployfile)
       else
         message = "File extension #{extension} is not supported for deployment file #{deployfile}"

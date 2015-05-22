@@ -48,7 +48,7 @@ module MarathonDeploy
   def self.expand_macros(data)
     processed = ""
     macros = get_macros(data).uniq
-    $LOG.debug("Macros found in deploy file: #{macros.join(',')}")
+    $LOG.debug("Macros found in deploy file: #{macros.join(',')}") unless (macros.empty?)
     undefined = get_undefined_macros(macros)
     if (!undefined.empty?)
       raise Error::UndefinedMacroError, "Macros found in deploy file without defined environment variables: #{undefined.join(',')}", caller

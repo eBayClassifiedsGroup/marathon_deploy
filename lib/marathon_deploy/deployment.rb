@@ -89,13 +89,13 @@ module MarathonDeploy
     Timeout::timeout(HEALTHY_WAIT_TIMEOUT) do
       loop do
         break if (!health_checks_defined?)
-        sick = get_alive("false")
+        sick = get_alive(false)
         elapsedTime = '%.2f' % (Time.now - startTime)
         if (!sick.empty?)
           $LOG.info("#{sick.size}/#{@application.instances} instances are not healthy, retrying in #{HEALTHY_WAIT_RECHECK_INTERVAL}s (elapsed time #{elapsedTime}s)")
           $LOG.debug("Sick instances: " + sick.join(','))
-        else
-          healthy = get_alive("true")
+        else         
+          healthy = get_alive(true)
           if (healthy.size == @application.instances)
             elapsedTime = '%.2f' % (Time.now - startTime)
             $LOG.info("#{healthy.size} of #{@application.instances} expected instances are healthy (Total health-check time #{elapsedTime}s).")
@@ -160,28 +160,43 @@ module MarathonDeploy
   ####### PRIVATE METHODS ##########
   private
 
-  def get_alive(value)        
-    state = Array.new
-    
+  # returns an array of taskIds which are alive
+  def get_alive(value) 
+    raise ArgumentError, "value must be boolean true or false" unless (!!value == value)       
+    state = Array.new    
     if (health_checks_defined?)     
       response = list_app
       response_body = Utils.response_body(response)
         if (response_body[:app].empty?)
           raise Error::DeploymentError, "Marathon returned an empty app json object", caller
         else
-          get_healthcheck_results.flatten.each do |result|
-            next if result.nil?
-            alive = result[:alive].to_s
-            taskId = result[:taskId].to_s              
-            if (!alive.nil? && !taskId.nil?)
-              state << taskId if (alive == value)
-            end          
+          tasks = Hash.new
+          task_ids = Array.new
+          check_results = get_healthcheck_results.flatten
+          check_results.each do |task| 
+            next if task.nil?  
+            tasks[task[:taskId].to_s] ||= [] 
+          tasks[task[:taskId].to_s] << task[:alive]
+          end
+          
+          tasks.each do |k,v|            
+            if (value)
+              # if there are only alive=true for all healthchecks for this instance
+              if (v.uniq.length == 1 && v.uniq.first == value)
+                task_ids << k
+              end 
+            else
+              # if alive=false is seen for any healthchecks for this instance
+              if (v.include?(value))
+                task_ids << k
+              end 
+            end            
           end         
         end
     else
       $LOG.info("No health checks defined. Cannot determine application health of #{@application.id}.")    
     end
-    return state
+    return task_ids
   end
   
   def get_task_ids
@@ -193,6 +208,7 @@ module MarathonDeploy
   def get_healthcheck_results
     response = list_app
     response_body = Utils.response_body(response)
+    #puts JSON.pretty_generate(response_body)
     return response_body[:app][:tasks].collect { |task| task[:healthCheckResults]}
   end
     
