@@ -14,7 +14,7 @@ env:
   SERVICE_8009_TAGS: ajp
   ANOTHER_MACRO_TEST: %%SPECIAL_PROPERTY%%
 id: content-webapp
-instances: 6
+instances: 1
 mem: 32
 uris: []
 healthChecks:

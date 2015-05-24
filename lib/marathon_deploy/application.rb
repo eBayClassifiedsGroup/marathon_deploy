@@ -10,10 +10,16 @@ module MarathonDeploy
   attr_reader :json, :id
   attr_accessor :envs
   
-  def initialize(deployfile)
+  def initialize(options={})
+    default_options = {
+      :force => false,
+      :deployfile => 'deploy.yaml'
+      }
+    options = default_options.merge!(options)
+    deployfile = options[:deployfile]
     
     if (!File.exist?(File.join(Dir.pwd,deployfile)))
-      message = "#{deployfile} not found in current directory #{File.join(Dir.pwd)}"
+      message = "\'#{deployfile}\' not found in current directory #{File.join(Dir.pwd)}"
       raise Error::IOError, message, caller
     end
 
@@ -43,8 +49,9 @@ module MarathonDeploy
     end
      
     @deployfile = deployfile                
-    @json =  Utils.deep_symbolize(@json)    
-    add_identifier
+    @json =  Utils.deep_symbolize(@json)  
+      
+    add_identifier if (options[:force])
    
   end
   

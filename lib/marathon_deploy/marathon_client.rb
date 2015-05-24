@@ -48,7 +48,7 @@ module MarathonDeploy
     else     
       response = deployment.create_app
     end
-    
+
     if ((300..999).include?(response.code.to_i))
       $LOG.error("Deployment response body => " + JSON.pretty_generate(JSON.parse(response.body)))
       raise Error::DeploymentError, "Deployment returned response code #{response.code}", caller

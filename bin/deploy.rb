@@ -12,11 +12,13 @@ require 'logger'
 options = {}
   
 # DEFAULTS
-options[:deployfile] = MarathonDeploy::MarathonDefaults::DEFAULT_DEPLOYFILE
+DEFAULT_DEPLOYFILE = MarathonDeploy::MarathonDefaults::DEFAULT_DEPLOYFILE
 options[:debug] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGLEVEL
 options[:environment] = MarathonDeploy::MarathonDefaults::DEFAULT_ENVIRONMENT_NAME
 options[:marathon_endpoints] = MarathonDeploy::MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
 options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
+options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
+options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
   
 OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options]"
@@ -39,9 +41,14 @@ OptionParser.new do |opts|
     exit
   end
   
-  opts.on("-f", "--file DEPLOYFILE" ,"Deploy file with json or yaml file extension. Default: #{options[:deployfile]}") do |f|
-    options[:deployfile] = f
+  opts.on("-f", "--force", "Force deployment when sending same deploy JSON to Marathon") do |f|
+    options[:force] = true
   end
+  
+  opts.on("-n", "--noop", "No action. Just display what would be performed.") do |f|
+    options[:noop] = true
+  end
+  
   
   opts.on("-e", "--environment ENVIRONMENT", "Default: #{options[:environment]}" ) do |e|
     options[:environment] = e
@@ -51,14 +58,28 @@ OptionParser.new do |opts|
     puts opts
     exit
   end 
+  
 end.parse!
+
+abort("Ambiguous arguments: #{ARGV.join(',')}. Only one deploy file argument may be passed.") if (ARGV.length > 1)
+
+argfile = ARGV.pop
+
+if (!argfile.nil?)
+  abort("Deploy file \'#{argfile}\' does not exist!") unless(File.file?(argfile))
+  deployfile = argfile
+elsif (File.file?(DEFAULT_DEPLOYFILE))
+  deployfile = DEFAULT_DEPLOYFILE
+else
+  abort("No deploy file argument provided and default \'#{DEFAULT_DEPLOYFILE}\' does not exist in current directory \'#{Dir.pwd}\'")  
+end
 
 $LOG = options[:logfile] ? Logger.new(options[:logfile]) : Logger.new(STDOUT)
 $LOG.level = options[:debug]
 
-deployfile = options[:deployfile]
+noop = options[:noop]  
 environment = MarathonDeploy::Environment.new(options[:environment])
-  
+    
 marathon_endpoints = Array.new
 if (options[:marathon_endpoints].nil?)
   if (environment.is_production?)
@@ -71,10 +92,14 @@ else
 end
  
 begin
-  application = MarathonDeploy::Application.new(deployfile)
+  application = MarathonDeploy::Application.new(:deployfile => deployfile, :force => options[:force])
 rescue MarathonDeploy::Error::IOError, MarathonDeploy::Error::UndefinedMacroError,MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::UnsupportedFileExtension  => e
   $LOG.debug(e)
   $LOG.error(e.message)
+  exit!
+rescue JSON::ParserError => e
+  $LOG.debug(e)
+  $LOG.error("\'#{deployfile}\' seems to be invalid JSON. Please verify the file.")
   exit!
 end
 
@@ -89,13 +114,16 @@ if (!environment.is_production?)
   application.overlay_preproduction_settings
 end
 
-puts "#" * 100
+display_msg = " MARATHON JSON DEPLOYMENT INSTRUCTIONS "
+puts '#' * 50 + display_msg + '#' * 50
 puts JSON.pretty_generate(application.json)
-puts "#" * 100
+puts "#" * (100 + display_msg.length)
 
-# deploy to each endpoint
+# deploy to each marathon endpoint
 marathon_endpoints.each do |marathon_url|
   begin
+    puts "[NOOP] Sending JSON deployment instructions to marathon endpoint: #{marathon_url}." if (noop)
+    next if (noop)
     client = MarathonDeploy::MarathonClient.new(marathon_url)
     client.application = application
     client.deploy  
@@ -111,3 +139,5 @@ marathon_endpoints.each do |marathon_url|
   end
 
 end
+
+puts "[NOOP] Deployment completed." if (noop)

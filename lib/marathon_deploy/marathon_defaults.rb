@@ -18,6 +18,8 @@ module MarathonDeploy
   DEFAULT_LOGLEVEL = Logger::INFO
   MARATHON_APPS_REST_PATH = '/v2/apps/'
   MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
+  DEFAULT_FORCE_DEPLOY = false
+  DEFAULT_NOOP = false
 
   @@preproduction_override = {
     :instances => 5,

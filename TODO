@@ -4,8 +4,9 @@
 DONE datacenter handling, iterate
 DONE deployment status polling
 - config assembler / generate properties script ?
-- read in ENVIRONMENT VARIABLES WITH MARATHON_ and add to deployment json ?
+DESCOPED read in ENVIRONMENT VARIABLES WITH MARATHON_ and add to deployment json ?
 - inject / replce minimumHealthCapacity is 1, maximumOverCapacity is 1
 DESCOPED custom external ports (must be provided in json)
-- read macros %NAME% from yaml/json and verify they are defined
-- gem structure / packaging / metadata
+DONE read macros %NAME% from yaml/json and verify they are defined
+DONE gem structure / packaging / metadata
+DONE implement noop
