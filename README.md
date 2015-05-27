@@ -15,6 +15,7 @@ A [Marathon](https://mesosphere.github.io/marathon/) command-line deployment too
 ### Roadmap Features
 * Record actions and json payload to a database (for rollback, history, auditing)
 * Deploy a deployment descriptor containing multiple applications
+* Specify deployment strategy (using minimumHealthCapacity) as an option. See [Marathon Deployment document](https://mesosphere.github.io/marathon/docs/deployments.html)
 
 
 ## Installation
@@ -27,7 +28,7 @@ $ gem install marathon_deploy
 
 Executables from this gem (automatically added to your $PATH):
 
-    $ deploy.rb  (client program executable)
+    $ marathon_deploy  (client program executable)
     $ json2yaml.rb (convenience utility for converting json to yaml)
     $ expand_macros.rb (expands all macros in the form %%MACRO%% with value of ENV[MACRO])
 
@@ -36,14 +37,15 @@ Executables from this gem (automatically added to your $PATH):
 
 ### Help
 ```
- deploy.rb -h
-Usage: deploy.rb [options]
+>marathon_deploy -h
+Usage: bin/marathon_deploy [options]
     -u, --url MARATHON_URL(S)        Default: ["http://localhost:8080"]
     -l, --logfile LOGFILE            Default: STDOUT
-    -v, --verbose                    Run verbosely
-    -f, --file DEPLOYFILE            Deploy file with json or yaml file extension. Default: deploy.yaml
-    -e, --environment ENVIRONMENT    Default: PREPRODUCTION
-    -h, --help                       Show this message
+    -d, --debug                      Run in debug mode
+    -v, --version                    Version info
+    -f, --force                      Force deployment when sending same deploy JSON to Marathon
+    -n, --noop                       No action. Just display what would be performed.
+    -e, --environment ENVIRONMENT    Default: PREPRODUC
 ```
 
 ### Example Deployfile
