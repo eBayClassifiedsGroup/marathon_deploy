@@ -1,12 +1,4 @@
 - SLACK notification
 - https://mesosphere.com/blog/2015/04/02/continuous-deployment-with-mesos-marathon-docker/
 - log to database
-DONE datacenter handling, iterate
-DONE deployment status polling
-- config assembler / generate properties script ?
-DESCOPED read in ENVIRONMENT VARIABLES WITH MARATHON_ and add to deployment json ?
-- inject / replce minimumHealthCapacity is 1, maximumOverCapacity is 1
-DESCOPED custom external ports (must be provided in json)
-DONE read macros %NAME% from yaml/json and verify they are defined
-DONE gem structure / packaging / metadata
-DONE implement noop
+- command line option for deployment-strategy: minimumHealthCapacity / maximumOverCapacity 
