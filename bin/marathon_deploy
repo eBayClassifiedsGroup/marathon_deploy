@@ -9,6 +9,7 @@ require 'marathon_deploy/version'
 require 'optparse'
 require 'logger'
 
+STDOUT.sync = true
 options = {}
   
 # DEFAULTS
