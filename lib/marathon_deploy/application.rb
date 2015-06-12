@@ -13,13 +13,13 @@ module MarathonDeploy
   def initialize(options={})
     default_options = {
       :force => false,
-      :deployfile => 'deploy.yaml'
-      }
+      :deployfile => 'deploy.yml'
+      }      
     options = default_options.merge!(options)
     deployfile = options[:deployfile]
     
-    if (!File.exist?(File.join(Dir.pwd,deployfile)))
-      message = "\'#{deployfile}\' not found in current directory #{File.join(Dir.pwd)}"
+    if (!File.exist?(deployfile))
+      message = "\'#{File.expand_path(deployfile)}\' not found."
       raise Error::IOError, message, caller
     end
 
@@ -66,7 +66,11 @@ module MarathonDeploy
   end
   
   def to_s
-    return id
+    return JSON.pretty_generate(@json)
+  end
+  
+  def env
+    @json[:env]
   end
   
   def id

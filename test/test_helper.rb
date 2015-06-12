@@ -1,0 +1,7 @@
+require 'marathon_deploy'
+require 'logger'
+require 'time'
+require 'marathon_deploy/application'
+require 'minitest/autorun'
+require 'minitest/unit'
+require 'minitest/pride'
