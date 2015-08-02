@@ -15,8 +15,8 @@ Gem::Specification.new do |spec|
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.files         << ["bin/marathon_deploy"]
-  spec.files         << ["bin/json2yaml.rb"]
-  spec.files         << ["bin/expand_macros.rb"]
+  spec.files         << ["bin/json2yaml"]
+  spec.files         << ["bin/expand_macros"]
   
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
