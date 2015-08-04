@@ -82,15 +82,15 @@ noop = options[:noop]
 environment = MarathonDeploy::Environment.new(options[:environment])
     
 marathon_endpoints = Array.new
-if (options[:marathon_endpoints].nil?)
-  if (environment.is_production?)
-    marathon_endpoints = MarathonDeploy::MarathonDefaults::DEFAULT_PRODUCTION_MARATHON_ENDPOINTS
+  if (options[:marathon_endpoints].nil?)
+    if (environment.is_production?)
+      marathon_endpoints = MarathonDeploy::MarathonDefaults::DEFAULT_PRODUCTION_MARATHON_ENDPOINTS
+    else
+      marathon_endpoints = MarathonDeploy::MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
+    end
   else
-    marathon_endpoints = MarathonDeploy::MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
+    marathon_endpoints = options[:marathon_endpoints]
   end
-else
-  marathon_endpoints = options[:marathon_endpoints]
-end
  
 begin
   application = MarathonDeploy::Application.new(:deployfile => deployfile, :force => options[:force])

@@ -23,14 +23,12 @@ module MarathonDeploy
 
   @@preproduction_override = {
     :instances => 5,
-    :mem => 512,
-    :cpus => 0.1      
+    :mem => 4096,
+    :cpus => 0.5      
   } 
   
   @@preproduction_env = {
-    :DATACENTER_NUMBER => "44",
-    :JAVA_XMS => "64m",
-    :JAVA_XMX => "128m"
+    :DATACENTER_NUMBER => "44"
   }  
   
   @@required_marathon_env_variables = %w[]
