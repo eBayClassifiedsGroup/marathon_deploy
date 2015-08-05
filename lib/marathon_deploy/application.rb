@@ -8,7 +8,6 @@ module MarathonDeploy
   class Application
   
   attr_reader :json, :id
-  attr_accessor :envs
   
   def initialize(options={})
     default_options = {
@@ -52,7 +51,10 @@ module MarathonDeploy
     @json =  Utils.deep_symbolize(@json)  
       
     add_identifier if (options[:force])
-   
+      
+    inject_envs = ENV.select { |k,v| /^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/.match(k)  }
+    cleaned_envs = inject_envs.map { |k,v| [k.gsub(/^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/,''), v ] }.to_h    
+    self.add_envs cleaned_envs
   end
   
   def overlay_preproduction_settings

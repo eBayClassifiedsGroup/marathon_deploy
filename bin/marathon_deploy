@@ -21,6 +21,7 @@ options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
 options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
 options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
   
+  
 OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options]"
   opts.release =  MarathonDeploy::VERSION
@@ -57,6 +58,16 @@ OptionParser.new do |opts|
   
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
+    puts "   ----------------- Additional Info -----------------", <<-DESCRIPTION
+    * Marathon Env  variables:
+      - Env variables with the prefix "#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}" will be injected into the deployment plan.  
+      - The prefix "#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}" will be removed before being added to the marathon json payload.
+      - Example:  Env variable #{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}DEBUG=True with be passed as DEBUG=True to the marathon-api.
+    * Macros:
+      - Marcos in the deploy yaml/json file use the format %%name%%.
+      - Macros in the deploy yaml/json file must have a corresponding Env variable with the same name.
+      - If any marcos are not defined by Env variables, deployment will fail.
+    DESCRIPTION
     exit
   end 
   

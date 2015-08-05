@@ -6,12 +6,10 @@ require 'marathon_deploy/version'
 require 'optparse'
 require 'logger'
 
-DEFAULT_TEMPLATE_FILENAME = 'dockerfile.tpl'
-
 options = {}
   
 # DEFAULTS
-options[:template] = DEFAULT_TEMPLATE_FILENAME
+options[:template] = 'dockerfile.tpl'
 options[:debug] = Logger::FATAL #Logger::INFO
 options[:outfile] = false
 options[:logfile] = false

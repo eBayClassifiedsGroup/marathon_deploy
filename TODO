@@ -1,4 +1,4 @@
 - SLACK notification
 - https://mesosphere.com/blog/2015/04/02/continuous-deployment-with-mesos-marathon-docker/
 - log to database
-- command line option for deployment-strategy: minimumHealthCapacity / maximumOverCapacity 
+- command line option for deployment-strategy: minimumHealthCapacity / maximumOverCapacity

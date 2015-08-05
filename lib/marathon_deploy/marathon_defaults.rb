@@ -13,13 +13,14 @@ module MarathonDeploy
   DEFAULT_ENVIRONMENT_NAME = 'PREPRODUCTION'
   DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS = ['http://localhost:8080']
   DEFAULT_PRODUCTION_MARATHON_ENDPOINTS = ['http://paasmaster46-1.mobile.rz:8080']
-  DEFAULT_DEPLOYFILE = 'deploy.yaml'
+  DEFAULT_DEPLOYFILE = 'deploy.yml'
   DEFAULT_LOGFILE = false
   DEFAULT_LOGLEVEL = Logger::INFO
   MARATHON_APPS_REST_PATH = '/v2/apps/'
   MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
   DEFAULT_FORCE_DEPLOY = false
   DEFAULT_NOOP = false
+  ENVIRONMENT_VARIABLE_PREFIX = 'MARATHON_DEPLOY_'
 
   @@preproduction_override = {
     :instances => 5,

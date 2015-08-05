@@ -2,7 +2,6 @@
 cmd: while true; echo "HELLO WORLD $(date)"; do sleep 1 ; done 
 cpus: 0.5
 env:
-  APPLICATION_NAME: public-search-germany-webapp
   CONFIG_ASSEMBLER_BASE_URL: http://mobile-config-assembler.service.consul/config-assembler
   JAVA_XMS: 252m
   JAVA_XMX: 504m
@@ -10,6 +9,6 @@ env:
   SERVICE_8009_NAME: public-search-germany-webapp
   SERVICE_8009_TAGS: ajp
 id: public-search-germany-webapp
-instances: 6
+instances: 2
 mem: 32
 uris: []
