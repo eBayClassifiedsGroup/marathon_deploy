@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.8.7.6
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!file.README.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'>
+<h1 id="label-Marathon+Deploy">Marathon Deploy</h1>
+
+<p>A <a href="https://mesosphere.github.io/marathon/">Marathon</a>
+command-line deployment tool in Ruby. Takes a json or yaml file describing
+an application and pushes it to the Marathon <a
+href="https://mesosphere.github.io/marathon/docs/rest-api.html">REST
+API</a></p>
+
+<h3 id="label-Feature+Summary">Feature Summary</h3>
+<ul><li>
+<p>Deploy a single application descriptor to multiple marathon endpoints</p>
+</li><li>
+<p>Checks for existing deployment of application before starting new
+deployment</p>
+</li><li>
+<p>Polls for Healthcheck results after deployment</p>
+</li><li>
+<p>Proper exit codes for easier integration with Jenkins automated pipelines</p>
+</li><li>
+<p>Deploy file macro substitution using values from ENV variables (eg,
+%%MACRO_NAME%%)</p>
+</li><li>
+<p>PRODUCTION / PREPRODUCTION modes (specified with –environment)</p>
+</li><li>
+<p>Rolling upgrade deployment strategy (Marathon default)</p>
+</li></ul>
+
+<h3 id="label-Roadmap+Features">Roadmap Features</h3>
+<ul><li>
+<p>Record actions and json payload to a database (for rollback, history,
+auditing)</p>
+</li><li>
+<p>Deploy a deployment descriptor containing multiple applications</p>
+</li><li>
+<p>Specify deployment strategy (using minimumHealthCapacity) as an option. See
+<a
+href="https://mesosphere.github.io/marathon/docs/deployments.html">Marathon
+Deployment document</a></p>
+</li></ul>
+
+<h2 id="label-Installation">Installation</h2>
+
+<p>Ensure Ruby (1.9+) and gem are installed on you system, then run:</p>
+
+<pre class="code ruby"><code class="ruby">$ gem install marathon_deploy</code></pre>
+
+<p>Executables from this gem (automatically added to your $PATH):</p>
+
+<pre class="code ruby"><code class="ruby">$ marathon_deploy  (client program executable)
+$ json2yaml.rb (convenience utility for converting json to yaml)
+$ expand_macros.rb (expands all macros in the form %%MACRO%% with value of ENV[MACRO])</code></pre>
+
+<h2 id="label-Usage">Usage</h2>
+
+<h3 id="label-Help">Help</h3>
+
+<pre class="code ruby"><code class="ruby">&gt;marathon_deploy -h
+Usage: bin/marathon_deploy [options]
+    -u, --url MARATHON_URL(S)        Default: [&quot;http://localhost:8080&quot;]
+    -l, --logfile LOGFILE            Default: STDOUT
+    -d, --debug                      Run in debug mode
+    -v, --version                    Version info
+    -f, --force                      Force deployment when sending same deploy JSON to Marathon
+    -n, --noop                       No action. Just display what would be performed.
+    -e, --environment ENVIRONMENT    Default: PREPRODUC</code></pre>
+
+<h3 id="label-Example+Deployfile">Example Deployfile</h3>
+
+<p>By default, a file called &#39;deploy.yaml&#39; is searched for in the
+current directory where deploy.rb is run from. An alternative file name can
+be provided with the -f parameter.</p>
+
+<p>The file format must conform to the <a
+href="https://mesosphere.github.io/marathon/docs/rest-api.html#post-/v2/apps">Marathon
+API specification</a></p>
+
+<p>Minimalistic example (using Docker container):</p>
+
+<pre class="code ruby"><code class="ruby">id: python-example-stable
+cmd: echo python stable `hostname` &gt; index.html; python3 -m http.server 8080
+mem: 16
+cpus: 0.1
+instances: 5
+container:
+  type: DOCKER
+  docker:
+    image: ubuntu:14.04
+    network: BRIDGE
+    portMappings:
+    - containerPort: 8080
+      hostPort: 0
+      protocol: tcp
+env:
+  SERVICE_TAGS: python,webapp,http,weight=100
+  SERVICE_NAME: python
+healthChecks:
+- portIndex: 0
+  protocol: TCP
+  gracePeriodSeconds: 30
+  intervalSeconds: 10
+  timeoutSeconds: 30
+  maxConsecutiveFailures: 3
+- path: &quot;/&quot;
+  portIndex: 0
+  protocol: HTTP
+  gracePeriodSeconds: 30
+  intervalSeconds: 10
+  timeoutSeconds: 30
+  maxConsecutiveFailures: 3</code></pre>
+
+<h3 id="label-JSON+to+YAML+file+conversion">JSON to YAML file conversion</h3>
+
+<p>As a convenience, the provided json2yaml.rb script can convert a JSON file
+to the arguably more human-readable YAML format:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='gvar'>$json2yaml</span><span class='period'>.</span><span class='id identifier rubyid_rb'>rb</span> <span class='id identifier rubyid_marathon'>marathon</span><span class='op'>-</span><span class='id identifier rubyid_webapp'>webapp</span><span class='period'>.</span><span class='id identifier rubyid_json'>json</span>  <span class='op'>&gt;</span> <span class='id identifier rubyid_marathon'>marathon</span><span class='op'>-</span><span class='id identifier rubyid_webapp'>webapp</span><span class='period'>.</span><span class='id identifier rubyid_yaml'>yaml</span>
+</code></pre>
+
+<h3 id="label-Parsing+a+file+with+macro+expansion+from+ENV+variables">Parsing a file with macro expansion from ENV variables</h3>
+
+<p>A helper script which takes a file and replaces all macros having the
+format %%MACRO%% with the values from ENV variables. Script will fail if
+there are no ENV values for macro names contained in the template.</p>
+
+<pre class="code ruby"><code class="ruby">$expand_macros.rb -h
+Usage: bin/expand_macros.rb [options]
+    -o, --outfile OUTFILE            Default: STDOUT
+    -l, --logfile LOGFILE            Default: STDOUT
+    -d, --debug                      Run in debug mode
+    -v, --version                    Version info
+    -f, --force                      force overwrite of existing OUTFILE
+    -t, --template TEMPLATE_FILE     Input file. Default: dockerfile.tpl
+    -h, --help                       Show this message</code></pre>
+
+<h2 id="label-Contributing">Contributing</h2>
+<ol><li>
+<p>Fork it ( <a
+href="https://github.com/[my-github-username]/marathon_deploy/fork">github.com/[my-github-username]/marathon_deploy/fork</a>
+)</p>
+</li><li>
+<p>Create your feature branch (<code>git checkout -b my-new-feature</code>)</p>
+</li><li>
+<p>Commit your changes (<code>git commit -am &#39;Add some
+feature&#39;</code>)</p>
+</li><li>
+<p>Push to the branch (<code>git push origin my-new-feature</code>)</p>
+</li><li>
+<p>Create a new Pull Request</p>
+</li></ol>
+</div></div>
+
+    <div id="footer">
+  Generated on Thu Aug  6 12:50:37 2015 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.2.0).
+</div>
+
+  </body>
+</html>
