@@ -6,15 +6,15 @@ require 'marathon_deploy/utils'
 module MarathonDeploy
   
   class Application
-  
+
   attr_reader :json, :id
   
-  def initialize(options={})
-    default_options = {
-      :force => false,
-      :deployfile => 'deploy.yml'
-      }      
-    options = default_options.merge!(options)
+  # Models an application to be added converted to json and send to the marathon-api
+  # @param [Hash] options hash for the application object
+  # @option options [Boolean] :force force a deployment by including an environment variable containing a random string value in the json marathon payload
+  # @option options [String] :deployfile file template and path. default deploy.yml in current directory
+  def initialize(options={ :force => false, :deployfile => 'deploy.yml'})
+
     deployfile = options[:deployfile]
     
     if (!File.exist?(deployfile))
