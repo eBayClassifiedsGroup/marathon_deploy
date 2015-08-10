@@ -53,10 +53,8 @@ module MarathonDeploy
     add_identifier if (options[:force])
       
     inject_envs = ENV.select { |k,v| /^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/.match(k)  }
-    cleaned_envs = inject_envs.map { |k,v| [k.gsub(/^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/,''), v ] } 
-    puts cleaned_envs
-    puts "class of cleaned envs: #{cleaned_envs.class}"    
-    self.add_envs cleaned_envs.to_h unless cleaned_envs.nil?
+    cleaned_envs = Hash[inject_envs.map { |k,v| [k.gsub(/^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/,''), v ] }]   
+    self.add_envs cleaned_envs.to_h unless cleaned_envs.empty?
   end
   
   def overlay_preproduction_settings
@@ -73,6 +71,7 @@ module MarathonDeploy
     return JSON.pretty_generate(@json)
   end
   
+  # return [JSON] list of ENV variables for this application 
   def env
     @json[:env]
   end
