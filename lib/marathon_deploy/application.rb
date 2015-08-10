@@ -71,7 +71,7 @@ module MarathonDeploy
     return JSON.pretty_generate(@json)
   end
   
-  # return [JSON] list of ENV variables for this application 
+  # @return [JSON] list of ENV variables for this application 
   def env
     @json[:env]
   end
