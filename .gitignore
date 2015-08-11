@@ -4,6 +4,7 @@
 /.yardoc
 /Gemfile.lock
 /_yardoc/
+/doc/
 /coverage/
 /pkg/
 /spec/reports/
