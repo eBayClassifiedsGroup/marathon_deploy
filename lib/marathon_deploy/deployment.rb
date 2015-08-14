@@ -155,7 +155,7 @@ module MarathonDeploy
     response = list_app
     response_body = Utils.response_body(response)
     health_check_json = response_body[:app][:healthChecks]
-    return false if health_check_json.nil? 
+    return false if health_check_json.nil?
     return health_check_json.size == 0 ? false : true
   end  
   
