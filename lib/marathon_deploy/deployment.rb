@@ -154,7 +154,9 @@ module MarathonDeploy
   def health_checks_defined?
     response = list_app
     response_body = Utils.response_body(response)
-    return response_body[:app][:healthChecks].size == 0 ? false : true
+    health_check_json = response_body[:app][:healthChecks]
+    return false if health_check_json.nil? 
+    return health_check_json.size == 0 ? false : true
   end  
   
   ####### PRIVATE METHODS ##########
