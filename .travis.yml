@@ -1,4 +1,4 @@
 language: ruby
 ruby:
 - 2.2
-script: bundle exec rake test
+# default rake task is test
