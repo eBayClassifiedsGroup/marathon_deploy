@@ -1,6 +1,7 @@
-require 'test_helper'
+require_relative 'test_helper'
 
 class ApplicationTest < Minitest::Test
+  
   def setup
     $LOG = Logger.new(STDOUT)
     $LOG.level = Logger::INFO
@@ -23,6 +24,14 @@ class ApplicationTest < Minitest::Test
     assert_instance_of(MarathonDeploy::Application,application)
     refute_empty(application.id)
     assert_equal(@release_version,application.env[:RELEASE_VERSION])
+  end
+  
+  def test_force_new_application
+    app = MarathonDeploy::Application.new(:deployfile => @yml, :force => true)
+    unique_id = app.env['UNIQUE_ID']
+    msg = "UNIQUE_ID environment variable was not set properly"
+    refute_nil(unique_id,msg)
+    refute_empty(unique_id,msg)
   end
   
 end
