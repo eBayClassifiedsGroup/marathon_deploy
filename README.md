@@ -9,8 +9,8 @@ A [Marathon](https://mesosphere.github.io/marathon/) command-line deployment too
 * Checks for existing deployment of application before starting new deployment
 * Polls for Healthcheck results after deployment
 * Proper exit codes for easier integration with Jenkins automated pipelines
-* Deploy file macro substitution using values from ENV variables (eg, %%MACRO_NAME%%)
-* Inject environment variables into a deployment when local environment variables with the format: MARATHON_DEPLOY_<FOO>=BAR  are set (MARATHON_DEPLOY prefix will be removed in final json payload).
+* Deploy file macro substitution using values from locally set environment (ENV) variables (macros have the format %%MACRO_NAME%% and must match the environment variable name)
+* Inject environment variables into a deployment when local environment variables with the format: MARATHON_DEPLOY_FOO=BAR  are set (MARATHON_DEPLOY prefix will be removed in final json payload).
 * PRODUCTION / PREPRODUCTION modes (specified with --environment)
 * Rolling upgrade deployment strategy (Marathon default)
 
