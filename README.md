@@ -1,3 +1,5 @@
+![Travis Build Status](https://travis-ci.org/joncolby/marathon_deploy.svg?branch=master)
+
 # Marathon Deploy
 
 A [Marathon](https://mesosphere.github.io/marathon/) command-line deployment tool in Ruby.  Takes a json or yaml file describing an application and pushes it to the Marathon [REST API](https://mesosphere.github.io/marathon/docs/rest-api.html)
