@@ -29,11 +29,11 @@ Ensure Ruby (1.9+) and gem are installed on you system, then run:
 $ gem install marathon_deploy
 ```
 
-Executables from this gem (automatically added to your $PATH):
+Executables from this gem:
 
-    $ marathon_deploy  (client program executable)
-    $ json2yaml.rb (convenience utility for converting json to yaml)
-    $ expand_macros.rb (expands all macros in the form %%MACRO%% with value of ENV[MACRO])
+    $ marathon_deploy  (client program executable, automatically added to $PATH)
+    $ extra/json2yaml (convenience utility for converting json to yaml)
+    $ extra/expand_macros (expands all macros in the form %%MACRO%% with value of ENV[MACRO])
 
 
 ## Usage
@@ -52,7 +52,7 @@ Usage: bin/marathon_deploy [options]
 ```
 
 ### Example Deployfile
-By default, a file called 'deploy.yaml' is searched for in the current directory where deploy.rb is run from.  An alternative file name can be provided with the -f parameter.
+By default, a file called 'deploy.yml' is searched for in the current directory where deploy.rb is run from.  An alternative file name can be provided with the -f parameter.
 
 The file format must conform to the [Marathon API specification](https://mesosphere.github.io/marathon/docs/rest-api.html#post-/v2/apps)
 
@@ -97,7 +97,7 @@ healthChecks:
 As a convenience, the provided json2yaml.rb script can convert a JSON file to the arguably more human-readable YAML format:
 
 ```
-$json2yaml.rb marathon-webapp.json  > marathon-webapp.yaml
+$json2yaml marathon-webapp.json  > marathon-webapp.yaml
 ```
 
 ### Parsing a file with macro expansion from ENV variables
@@ -105,7 +105,7 @@ $json2yaml.rb marathon-webapp.json  > marathon-webapp.yaml
 A helper script which takes a file and replaces all macros having the format %%MACRO%% with the values from ENV variables.  Script will fail if there are no ENV values for macro names contained in the template.
 
 ```
-$expand_macros.rb -h
+$expand_macros -h
 Usage: bin/expand_macros.rb [options]
     -o, --outfile OUTFILE            Default: STDOUT
     -l, --logfile LOGFILE            Default: STDOUT
