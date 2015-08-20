@@ -32,8 +32,8 @@ $ gem install marathon_deploy
 Executables from this gem:
 
     $ marathon_deploy  (client program executable, automatically added to $PATH)
-    $ extra/json2yaml (convenience utility for converting json to yaml)
-    $ extra/expand_macros (expands all macros in the form %%MACRO%% with value of ENV[MACRO])
+    $ json2yaml (convenience utility for converting json to yaml)
+    $ expand_macros (expands all macros in the form %%MACRO%% with value of ENV[MACRO])
 
 
 ## Usage
