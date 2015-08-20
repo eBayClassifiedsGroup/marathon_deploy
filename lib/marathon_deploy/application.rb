@@ -62,17 +62,17 @@ module MarathonDeploy
   end
   
   def health_checks
-    return json[:healthChecks]
+    @json[:healthChecks]
   end
   
   def add_identifier
     random = Utils.random
     # Time.now.to_i
-    json[:env]['UNIQUE_ID'] = "#{id}_#{random}"
+    @json[:env]['UNIQUE_ID'] = "#{id}_#{random}"
   end
   
   def to_s
-    return JSON.pretty_generate(@json)
+    JSON.pretty_generate(@json)
   end
   
   # @return [JSON] list of ENV variables for this application 
@@ -81,9 +81,7 @@ module MarathonDeploy
   end
   
   def id
-    if (@json[:id])
-      return @json[:id]
-    end
+    @json[:id]
   end
   
   def add_envs(envs)
@@ -97,9 +95,7 @@ module MarathonDeploy
   end
     
   def instances
-    if (@json[:instances])
-      return @json[:instances]
-    end    
+    @json[:instances]  
   end  
      
   end
