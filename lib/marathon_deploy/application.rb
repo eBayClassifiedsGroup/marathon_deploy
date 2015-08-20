@@ -61,6 +61,10 @@ module MarathonDeploy
     @json = MarathonDefaults.overlay_preproduction_settings(@json)
   end
   
+  def health_checks
+    return json[:healthChecks]
+  end
+  
   def add_identifier
     random = Utils.random
     # Time.now.to_i

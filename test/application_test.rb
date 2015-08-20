@@ -34,4 +34,10 @@ class ApplicationTest < Minitest::Test
     refute_empty(unique_id,msg)
   end
   
+  def test_health_checks_defined
+    app = MarathonDeploy::Application.new(:deployfile => @yml)
+    refute_nil(app.health_checks, "health checks returned nil")    
+    refute_empty(app.health_checks, "health checks returned empty")
+  end
+  
 end

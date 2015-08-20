@@ -152,13 +152,9 @@ module MarathonDeploy
   end  
   
   def health_checks_defined?
-    response = list_app
-    return false unless response.kind_of? Net::HTTPSuccess
-    response_body = Utils.response_body(response)
-    return false if response_body[:app].nil?
-    health_check_json = response_body[:app][:healthChecks]
-    return false if health_check_json.nil?
-    return health_check_json.size == 0 ? false : true
+    health_checks = @application.health_checks
+    return true unless health_checks.nil? or health_checks.empty?
+    return false
   end  
   
   ####### PRIVATE METHODS ##########
