@@ -8,4 +8,4 @@ deploy:
   gem: marathon_deploy
   on:
     tags: true
-    repo: joncolby/marathon_deploy
+    repo: eBayClassifiedsGroup/marathon_deploy/marathon_deploy
