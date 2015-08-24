@@ -27,6 +27,6 @@ task :push do
 end
 
 desc "Tag and push code to ecg and origin remote branches."
-task :publish => [:tag, :push]
+task :publish => [:push, :tag]
 
 task :default => :test
