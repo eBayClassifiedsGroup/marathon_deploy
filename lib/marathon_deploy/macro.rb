@@ -56,7 +56,7 @@ module MarathonDeploy
   
     data.each do |line|
       macros.each do |m|
-        env_value =  ENV[strip(m)].to_json
+        env_value =  ENV[strip(m)]
         line.gsub!(m, env_value)
       end
       processed += line
