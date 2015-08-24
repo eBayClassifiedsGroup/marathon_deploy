@@ -33,6 +33,14 @@ module MarathonDeploy
         message = "File extension #{extension} is not supported for deployment file #{deployfile}"
         raise Error::UnsupportedFileExtension, message, caller
     end 
+
+    # JSON fix for marathon
+    # marathon require ENV variables to be quoted
+    @json['env'].each do |key , value|
+      if (value.is_a? Integer)
+        @json['env'][key] = value.to_json
+      end
+    end
     
     missing_attributes = MarathonDefaults.missing_attributes(@json) 
     
