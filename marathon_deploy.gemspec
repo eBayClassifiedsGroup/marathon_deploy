@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["jcolby@team.mobile.de"]
   spec.summary       = %q{Mesos/Marathon deployment tool.}
   spec.description   = %q{Pushes a yaml or json file to the Marathon API.}
-  spec.homepage      = "https://github.com/joncolby/marathon_deploy"
+  spec.homepage      = "https://github.com/eBayClassifiedsGroup/marathon_deploy"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
