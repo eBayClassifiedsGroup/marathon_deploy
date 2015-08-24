@@ -1,4 +1,11 @@
 language: ruby
 ruby:
 - 2.2
-# default rake task is test
+deploy:
+  provider: rubygems
+  api_key:
+    secure: Z0Deerg7J5cIRIxnnU2AcBe5dj2V/6pj2GoAW6Xr4FKI5ARmVVoObALRFnWLNHyzGRJgougGStisuqt0uzqhz/b/AbNglmbNZkOjOdu+UdQsUVriAtuiMQIxT7d8cVuXXPLrJDr5A/4aDq6s62nyiYMQUotp2R12A6zR7WAbpFznyJrfVTh32U7pgTD4RenN3QfT9Hsq1o0Kz5m5NsobM4Dvbz2DiwAmUmKu+jOiYHzKEcUWJO3DGHdA+ObYQWdYfzJaIp4Kw2mYUYPsR3w50qJMjdML7HXTxI1uDai2Qv1lPDgFZjvfzXOwhnY7c8wtOvl8GqG3fp8yL2PN9jemXbKCqW29SXG7UUTf1tKPA/jZqbZ+GcsAmr1/4B/n5g2dcCeSIr+MR/X6Zd24bEZkfbxw/aH8kxBSd3NBqnLpnYFYFlifGKvxdGgT4OnlNQOdPNetAsxcUokkyW52EbpmK3x1R43iKL1FoNgAdxJKVHc6CmOvtE0mp7y/MvK2OKSJ0+tFg6BjvygO5DrmfRZiRlX7gn1Jp7y+hy7WS/iWuRPbF79TUXxJ13jVK+MK5scguwMeV95ZhrEewWq4ulRPEZ0/fYNlcj1+BJ4uF0fAjLsjMESP8hedguGT2vUJSvOJli6mx0YpyBFTNW8W1c1EgpipMq1UeXZO79US57O37zQ=
+  gem: marathon_deploy
+  on:
+    tags: true
+    repo: joncolby/marathon_deploy
