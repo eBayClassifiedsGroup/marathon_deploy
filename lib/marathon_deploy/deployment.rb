@@ -165,9 +165,17 @@ module MarathonDeploy
     raise ArgumentError, "value must be boolean true or false" unless (!!value == value)       
     state = Array.new    
     if (health_checks_defined?)     
-      response = list_app
-      response_body = Utils.response_body(response)
-        if (response_body[:app].empty?)
+
+        4.times { |i|        
+          response = list_app
+          response_body = Utils.response_body(response)
+          apps = response_body[:app]
+          break unless apps.nil?
+          sleep i          
+        }
+      
+      
+        if (apps.empty?)
           raise Error::DeploymentError, "Marathon returned an empty app json object", caller
         else
           tasks = Hash.new
