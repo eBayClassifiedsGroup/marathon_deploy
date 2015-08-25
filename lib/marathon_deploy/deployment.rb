@@ -165,7 +165,7 @@ module MarathonDeploy
     raise ArgumentError, "value must be boolean true or false" unless (!!value == value)       
     state = Array.new    
     if (health_checks_defined?)     
-
+        apps = Array.new
         4.times { |i|  
           i+=1      
           response = list_app
