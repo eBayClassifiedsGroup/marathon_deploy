@@ -166,7 +166,8 @@ module MarathonDeploy
     state = Array.new    
     if (health_checks_defined?)     
         apps = Array.new
-        4.times { |i|  
+        
+        5.times { |i|  
           i+=1      
           response = list_app
           response_body = Utils.response_body(response)
@@ -174,11 +175,10 @@ module MarathonDeploy
           break unless apps.nil?
           $LOG.info "Application #{@application.id} is not yet registered with Marathon. Waiting #{i} seconds then retrying ..."
           sleep i          
-        }
-      
+        }      
       
         if (apps.nil? or apps.empty?)
-          raise Error::DeploymentError, "Marathon returned an empty app or nil json object", caller
+          raise Error::DeploymentError, "Marathon API returned an empty app or nil json object for application #{@application.id}", caller
         else
           tasks = Hash.new
           task_ids = Array.new
