@@ -9,7 +9,4 @@ deploy:
   on:
     tags: true
     repo: eBayClassifiedsGroup/marathon_deploy
-    branches:
-      only:
-        - master
-        - /v\d+\.\d+[a-z]/
+    all_branches: true
