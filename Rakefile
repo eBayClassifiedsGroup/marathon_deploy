@@ -16,11 +16,11 @@ end
 desc "Tag the repo as v#{spec.version} and push the code and tag."
 task :tag do 
   sh "git tag -a -m 'Version #{spec.version}' v#{spec.version}"
-#  sh "git push --tags origin #{`git rev-parse --abbrev-ref HEAD`}"
 end
 
 desc "Push commits to origin/ecg repos"
 task :push do 
+  sh "git push --tags origin #{`git rev-parse --abbrev-ref HEAD`}"
   sh "git push --follow-tags origin #{`git rev-parse --abbrev-ref HEAD`}"
 end
 
