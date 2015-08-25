@@ -36,8 +36,8 @@ module MarathonDeploy
 
     # JSON fix for marathon
     # marathon require ENV variables to be quoted
-    @json['env'].each do |key , value|
-      if (value.is_a? Integer)
+    @json['env'].each do |key, value|
+      if (value.is_a? Numeric)
         @json['env'][key] = value.to_json
       end
     end
