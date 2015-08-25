@@ -21,7 +21,7 @@ end
 desc "Push commits to origin/ecg repos"
 task :push do 
   sh "git push --tags origin #{`git rev-parse --abbrev-ref HEAD`}"
-  sh "git push --follow-tags origin #{`git rev-parse --abbrev-ref HEAD`}"
+  sh "git push origin #{`git rev-parse --abbrev-ref HEAD`}"
 end
 
 desc "Tag and push code to ecg and origin remote branches."
