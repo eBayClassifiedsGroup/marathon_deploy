@@ -95,7 +95,11 @@ module MarathonDeploy
   def add_envs(envs)
     if (envs.is_a?(Hash))
       envs.each do |key,value|
-        @json[:env][key] = value
+        if (value.is_a? Numeric)
+          @json[:env][key] = value.to_json
+        else
+          @json[:env][key] = value
+        end
       end 
     else
       raise Error::BadFormatError, "argument must be a hash", caller

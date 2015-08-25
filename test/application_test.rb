@@ -17,6 +17,10 @@ class ApplicationTest < Minitest::Test
     refute_empty(application.id)
     application.add_envs({ :MINITEST => "MINITEST_ENV_TEST" })
     assert_equal("MINITEST_ENV_TEST",application.env[:MINITEST])
+    application.add_envs({ :INTIGERTEST => 5 })
+    assert_equal("5",application.env[:INTIGERTEST])
+    application.add_envs({ :PITEST => 3.14159 })
+    assert_equal("3.14159",application.env[:PITEST])
   end
   
   def test_new_application_with_yaml
