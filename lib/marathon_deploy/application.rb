@@ -26,7 +26,7 @@ module MarathonDeploy
     
     case extension
       when '.json'
-        @json = YamlJson.read_json(deployfile)
+        @json = YamlJson.read_json_w_macros(deployfile)
       when '.yaml','.yml'
         @json = YamlJson.yaml2json(deployfile)
       else
