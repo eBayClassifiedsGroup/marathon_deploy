@@ -1,4 +1,4 @@
-![Travis Build Status](https://travis-ci.org/joncolby/marathon_deploy.svg?branch=master)
+[![Build Status](https://travis-ci.org/eBayClassifiedsGroup/marathon_deploy.svg?branch=master)](https://travis-ci.org/eBayClassifiedsGroup/marathon_deploy)
 
 # Marathon Deploy
 
