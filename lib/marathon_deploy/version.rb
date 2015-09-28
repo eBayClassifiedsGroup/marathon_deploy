@@ -1,3 +1,3 @@
 module MarathonDeploy
-  VERSION = "0.1.41"
+  VERSION = "0.1.43"
 end
