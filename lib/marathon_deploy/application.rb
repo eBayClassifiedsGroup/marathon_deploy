@@ -13,7 +13,7 @@ module MarathonDeploy
   # @param [Hash] options hash for the application object
   # @option options [Boolean] :force force a deployment by including an environment variable containing a random string value in the json marathon payload
   # @option options [String] :deployfile file template and path. default deploy.yml in current directory
-  def initialize(options={ :force => false, :deployfile => 'deploy.yml'})
+  def initialize(options={ :force => false, :deployfile => 'deploy.yml', :remove_elements => []})
 
     deployfile = options[:deployfile]
     
@@ -59,6 +59,7 @@ module MarathonDeploy
     @json =  Utils.deep_symbolize(@json)  
       
     add_identifier if (options[:force])
+    remove_elements(options[:remove_elements])
       
     inject_envs = ENV.select { |k,v| /^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/.match(k)  }
     cleaned_envs = Hash[inject_envs.map { |k,v| [k.gsub(/^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/,''), v ] }]   
@@ -78,7 +79,15 @@ module MarathonDeploy
     # Time.now.to_i
     @json[:env]['UNIQUE_ID'] = "#{id}_#{random}"
   end
-  
+
+  def remove_elements(remove_array)
+    if (remove_array.is_a?(Array))
+      remove_array.each do |element|
+        @json.delete(element)
+      end
+    end
+  end
+
   def to_s
     JSON.pretty_generate(@json)
   end

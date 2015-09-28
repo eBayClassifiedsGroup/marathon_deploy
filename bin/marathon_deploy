@@ -11,7 +11,7 @@ require 'logger'
 
 STDOUT.sync = true
 options = {}
-  
+
 # DEFAULTS
 DEFAULT_DEPLOYFILE = MarathonDeploy::MarathonDefaults::DEFAULT_DEPLOYFILE
 options[:debug] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGLEVEL
@@ -20,6 +20,7 @@ options[:marathon_endpoints] = MarathonDeploy::MarathonDefaults::DEFAULT_PREPROD
 options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
 options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
 options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
+options[:remove_elements] = MarathonDeploy::MarathonDefaults::DEFAULT_REMOVE_ELEMENTS
   
   
 OptionParser.new do |opts|
@@ -42,20 +43,23 @@ OptionParser.new do |opts|
     puts "#{$0} version #{opts.release}"
     exit
   end
-  
+
   opts.on("-f", "--force", "Force deployment when sending same deploy JSON to Marathon") do |f|
     options[:force] = true
   end
-  
+
   opts.on("-n", "--noop", "No action. Just display what would be performed.") do |f|
     options[:noop] = true
   end
-  
-  
+
+  opts.on("-r", "--remove ELEMENTS", Array, "Remove elemensts from deploymnet plan (example -r :constraints,:healthChecks)") do |r|
+    options[:remove_elements] = r
+  end
+
   opts.on("-e", "--environment ENVIRONMENT", "Default: #{options[:environment]}" ) do |e|
     options[:environment] = e
   end
-  
+
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
     puts "   ----------------- Additional Info -----------------", <<-DESCRIPTION
@@ -102,9 +106,19 @@ marathon_endpoints = Array.new
   else
     marathon_endpoints = options[:marathon_endpoints]
   end
+
+remove_elements = Array.new
+  if (options[:remove_elements].nil?)
+    remove_elements = MarathonDeploy::MarathonDefaults::DEFAULT_REMOVE_ELEMENTS
+  else
+    # converts quotes srtings in array to strings
+    remove_elements = options[:remove_elements].map do |n|
+      eval n if not MarathonDeploy::MarathonDefaults::DEFAULT_KEEP_ELEMENTS.include? n
+    end
+  end
  
 begin
-  application = MarathonDeploy::Application.new(:deployfile => deployfile, :force => options[:force])
+  application = MarathonDeploy::Application.new(:deployfile => deployfile, :force => options[:force], :remove_elements => remove_elements)
 rescue MarathonDeploy::Error::IOError, MarathonDeploy::Error::UndefinedMacroError,MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::UnsupportedFileExtension  => e
   $LOG.debug(e)
   $LOG.error(e.message)

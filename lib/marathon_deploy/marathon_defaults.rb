@@ -20,6 +20,8 @@ module MarathonDeploy
   MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
   DEFAULT_FORCE_DEPLOY = false
   DEFAULT_NOOP = false
+  DEFAULT_KEEP_ELEMENTS = [':cpus', ':mem', ':instances', ':env']
+  DEFAULT_REMOVE_ELEMENTS = []
   ENVIRONMENT_VARIABLE_PREFIX = 'MARATHON_DEPLOY_'
 
   @@preproduction_override = {
