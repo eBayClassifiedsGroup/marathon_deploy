@@ -21,7 +21,7 @@ module MarathonDeploy
   DEFAULT_FORCE_DEPLOY = false
   DEFAULT_NOOP = false
   DEFAULT_REMOVE_ELEMENTS = []
-  DEFAULT_KEEP_ELEMENTS = [':cpus', ':mem', ':instances', ':env']
+  DEFAULT_KEEP_ELEMENTS = [':id']
   ENVIRONMENT_VARIABLE_PREFIX = 'MARATHON_DEPLOY_'
 
   @@preproduction_override = {
@@ -36,10 +36,6 @@ module MarathonDeploy
     :cpus => 0.1
   }
 
-  @@preproduction_env = {
-    :DATACENTER_NUMBER => "44"
-  }  
-  
   @@required_marathon_env_variables = %w[]
   
   #@@required_marathon_attributes = %w[id env container healthChecks args storeUrls].map(&:to_sym)
@@ -84,9 +80,6 @@ module MarathonDeploy
           $LOG.debug("Overriding property [#{property}: #{json[property]}] with preproduction default [#{property}: #{@@preproduction_override[property]}]")
           json[property] = @@preproduction_override[property]
         end
-      end
-      @@preproduction_env.each do |name,value|
-        json[:env][name] = value
       end
       return json
   end

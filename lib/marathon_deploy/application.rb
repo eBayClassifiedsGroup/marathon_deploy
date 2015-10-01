@@ -102,6 +102,9 @@ module MarathonDeploy
   end
   
   def add_envs(envs)
+    if (!@json[:env])
+      @json[:env] = {}
+    end
     if (envs.is_a?(Hash))
       envs.each do |key,value|
         if (value.is_a? Numeric)
