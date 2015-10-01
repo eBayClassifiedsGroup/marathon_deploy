@@ -20,16 +20,22 @@ module MarathonDeploy
   MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
   DEFAULT_FORCE_DEPLOY = false
   DEFAULT_NOOP = false
-  DEFAULT_KEEP_ELEMENTS = [':cpus', ':mem', ':instances', ':env']
   DEFAULT_REMOVE_ELEMENTS = []
+  DEFAULT_KEEP_ELEMENTS = [':cpus', ':mem', ':instances', ':env']
   ENVIRONMENT_VARIABLE_PREFIX = 'MARATHON_DEPLOY_'
 
   @@preproduction_override = {
     :instances => 5,
     :mem => 4096,
-    :cpus => 0.5      
-  } 
-  
+    :cpus => 0.5
+  }
+
+  @@defaults_minimum= {
+    :instances => 1,
+    :mem => 256,
+    :cpus => 0.1
+  }
+
   @@preproduction_env = {
     :DATACENTER_NUMBER => "44"
   }  
@@ -69,6 +75,10 @@ module MarathonDeploy
   def self.overlay_preproduction_settings(json)
     json = Utils.deep_symbolize(json)
       @@preproduction_override.each do |property,value|
+        if (!json[property])
+          $LOG.debug("Missing property [#{property}] overriding with default [#{property}: #{@@defaults_minimum[property]}]")
+          json[property] = @@defaults_minimum[property]
+        end
         given_value = json[property]
         if (given_value > @@preproduction_override[property])
           $LOG.debug("Overriding property [#{property}: #{json[property]}] with preproduction default [#{property}: #{@@preproduction_override[property]}]")
