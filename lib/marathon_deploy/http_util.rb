@@ -5,15 +5,22 @@ require 'marathon_deploy/error'
 module MarathonDeploy
   module HttpUtil
 
+@@o_timeout = 60.0
+@@r_timeout = 60.0
+@@og_timeout = 60.0
+@@rg_timeout = 60.0
+
   def self.put(url,payload)
     uri = construct_uri url 
     begin
       http = Net::HTTP.new(uri.host, uri.port)
+      http.open_timeout = @@o_timeout
+      http.read_timeout = @@r_timeout
       req = Net::HTTP::Put.new(uri.request_uri)
       req.body = payload.to_json
       req["Content-Type"] = "application/json"
       response = http.request(req)
-    rescue Errno::ECONNREFUSED => e
+    rescue Exception => e
       $LOG.error("Error calling marathon api: #{e.message}")
       exit!
     end
@@ -24,11 +31,13 @@ module MarathonDeploy
     uri = construct_uri url 
     begin
       http = Net::HTTP.new(uri.host, uri.port)
+      http.open_timeout = @@o_timeout
+      http.read_timeout = @@r_timeout
       req = Net::HTTP::Post.new(uri.request_uri)
       req.body = payload.to_json
       req["Content-Type"] = "application/json"
       response = http.request(req)
-    rescue Errno::ECONNREFUSED => e
+    rescue Exception => e
       message = "Error calling marathon api: #{e.message}"
       $LOG.error(message)
       raise Error::MarathonError, message, caller
@@ -45,9 +54,11 @@ module MarathonDeploy
     uri = construct_uri url 
        begin
          http = Net::HTTP.new(uri.host, uri.port)
+         http.open_timeout = @@o_timeout
+         http.read_timeout = @@r_timeout
          req = Net::HTTP::Delete.new(uri.request_uri)         
          response = http.request(req)
-       rescue Errno::ECONNREFUSED => e
+       rescue Exception => e
          message = "Error calling marathon api: #{e.message}"
          $LOG.error(message)
          raise Error::MarathonError, message, caller
@@ -62,11 +73,14 @@ module MarathonDeploy
   def self.get(url)
     uri = construct_uri url
     begin
-    http = Net::HTTP.new(uri.host, uri.port)
-    req = Net::HTTP::Get.new(uri.request_uri)
-    req["Content-Type"] = "application/json"
-    response = http.request(req)
-    rescue  Errno::ECONNREFUSED => e
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.open_timeout = @@og_timeout
+      http.read_timeout = @@rg_timeout
+#      http.set_debug_output($stdout)
+      req = Net::HTTP::Get.new(uri.request_uri)
+      req["Content-Type"] = "application/json"
+      response = http.request(req)
+    rescue Exception => e
       message = "Error calling marathon api: #{e.message}"
       $LOG.error(message)
       raise Error::MarathonError, message, caller

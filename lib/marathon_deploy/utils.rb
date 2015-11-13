@@ -1,3 +1,5 @@
+require 'marathon_deploy/marathon_defaults'
+
 module MarathonDeploy
   module Utils
   
@@ -23,11 +25,34 @@ module MarathonDeploy
   end
   
   def self.response_body(response)
-    if (response.is_a?(Net::HTTPResponse) && !response.body.nil?)
-      return deep_symbolize((JSON.parse(response.body)))
+    if (!response.body.nil? && !response.body.empty? && response.kind_of?(Net::HTTPSuccess))
+      begin
+        return deep_symbolize((JSON.parse(response.body)))
+      rescue Exception=>e
+        $LOG.info "EXCEPTION: #{e} Cannot parse JSON"
+      end
     end
     return nil
   end
- 
+
+  def self.getValue(url,application,*keys)
+    value = nil
+    5.times { |i|
+      i+=1
+      model = response_body(HttpUtil.get(url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id))
+      value = lookup(model, *keys) if (!model.nil? and !model.empty?)
+      break if (!value.nil? and !value.empty?)
+      $LOG.info "Application #{application.id} is not yet registered with Marathon. Waiting #{i} seconds then retrying ..."
+      sleep i
+    }
+    value
+  end
+
+  def self.lookup(model, key, *rest)
+    v = model[key]
+    return v if rest.empty?
+    v && lookup(v, *rest)
+  end
+
   end 
 end

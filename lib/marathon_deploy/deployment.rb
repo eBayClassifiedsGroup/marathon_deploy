@@ -60,7 +60,7 @@ module MarathonDeploy
           elapsedTime = '%.2f' % (Time.now - startTime)
           $LOG.info("Deployment with deploymentId #{@deploymentId} ended (Total deployment time #{elapsedTime}s)")  
         end
-      end    
+      end
   end
   
   def wait_for_application(message = "Deployment of application #{@application.id} in progress")
@@ -102,7 +102,7 @@ module MarathonDeploy
             $LOG.debug("Healthy instances running: " + healthy.join(','))
             break
           else
-            $LOG.info("#{healthy.size} healthy instances seen, #{@application.instances} healthy instances expected, retrying in in #{HEALTHY_WAIT_RECHECK_INTERVAL}s")
+            $LOG.info("#{healthy.size} healthy instances seen, #{@application.instances} healthy instances expected, retrying in #{HEALTHY_WAIT_RECHECK_INTERVAL}s")
           end
         end      
         sleep(HEALTHY_WAIT_RECHECK_INTERVAL)
@@ -136,11 +136,10 @@ module MarathonDeploy
   def update_app(force=false)
     url = @url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id
     url += force ? '?force=true' : ''
-    $LOG.debug("Updating app #{@application.id}  #{url}")
+    $LOG.debug("Updating app #{@application.id} #{url}")
     response = HttpUtil.put(url,@application.json)    
     @deploymentId = Utils.response_body(response)[:deploymentId]
     return response
-    
   end
   
   def rolling_restart
@@ -163,20 +162,14 @@ module MarathonDeploy
   # returns an array of taskIds which are alive
   def get_alive(value) 
     raise ArgumentError, "value must be boolean true or false" unless (!!value == value)       
-    state = Array.new    
     if (health_checks_defined?)     
         apps = Array.new
-        
-        5.times { |i|  
-          i+=1      
-          response = list_app
-          response_body = Utils.response_body(response)
-          apps = response_body[:app]
-          break unless apps.nil?
-          $LOG.info "Application #{@application.id} is not yet registered with Marathon. Waiting #{i} seconds then retrying ..."
-          sleep i          
-        }      
-      
+        begin
+          apps = Utils.getValue(@url,@application,:app)
+        rescue Exception=>e
+          $LOG.info "EXCEPTION: #{e} Cannot determine apps"
+        end
+
         if (apps.nil? or apps.empty?)
           raise Error::DeploymentError, "Marathon API returned an empty app or nil json object for application #{@application.id}", caller
         else
@@ -208,25 +201,32 @@ module MarathonDeploy
     end
     return task_ids
   end
-  
+
   def get_task_ids
-    response = list_app
-    response_body = Utils.response_body(response)
-    return response_body[:app][:tasks].collect { |task| task[:id]}
+    begin
+      a = Utils.getValue(@url,@application,:app,:tasks).collect { |task| task[:id]}
+      return a
+    rescue Exception=>e
+      $LOG.info "EXCEPTION: #{e} Cannot determine task_ids"
+    end
   end
-  
+
   def get_healthcheck_results
-    response = list_app
-    response_body = Utils.response_body(response)
-    #puts JSON.pretty_generate(response_body)
-    return response_body[:app][:tasks].collect { |task| task[:healthCheckResults]}
+    begin
+      a = Utils.getValue(@url,@application,:app,:tasks).collect { |task| task[:healthCheckResults]}
+      return a
+    rescue Exception=>e
+      $LOG.info "EXCEPTION: #{e} Cannot determine healthcheck_result"
+    end
   end
     
   def get_deployment_id
-    response = list_app
-    payload = Utils.response_body(response)
-    return payload[:app][:deployments].first[:id] unless (payload[:app].nil?)
-    return nil
+    begin
+      a = Utils.getValue(@url,@application,:app,:deployments,0)[:id]
+      return a
+    rescue Exception=>e
+      $LOG.info "EXCEPTION: #{e} Cannot determine deployment_id"
+    end
   end
     
   def list_all
