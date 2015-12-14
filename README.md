@@ -23,7 +23,7 @@ A [Marathon](https://mesosphere.github.io/marathon/) command-line deployment too
 
 ## Installation
 
-Ensure Ruby (1.9+) and gem are installed on you system, then run:
+Ensure Ruby (1.9+) and ruby-dev and gem are installed on you system, then run:
 
 ```
 $ gem install marathon_deploy
