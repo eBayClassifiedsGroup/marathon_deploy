@@ -29,9 +29,21 @@ module MarathonDeploy
       begin
         return deep_symbolize((JSON.parse(response.body)))
       rescue Exception=>e
-        $LOG.info "EXCEPTION: #{e} Cannot parse JSON"
+        $LOG.error "EXCEPTION: #{e} Cannot parse JSON"
       end
     end
+
+    if response.body.nil?
+      $LOG.error "No response.body"
+    end
+    if response.body.empty?
+      $LOG.error "Response.body is empty"
+    end
+    if !response.kind_of?(Net::HTTPSuccess)
+      $LOG.error "Answer is not 200, more info:"
+      $LOG.error deep_symbolize((JSON.parse(response.body)))
+    end
+
     return nil
   end
 

@@ -138,7 +138,11 @@ module MarathonDeploy
     url += force ? '?force=true' : ''
     $LOG.debug("Updating app #{@application.id} #{url}")
     response = HttpUtil.put(url,@application.json)    
-    @deploymentId = Utils.response_body(response)[:deploymentId]
+    begin
+      @deploymentId = Utils.response_body(response)[:deploymentId]
+    rescue Exception=>e
+      $LOG.error "EXCEPTION: #{e}"
+    end
     return response
   end
   
