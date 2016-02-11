@@ -14,6 +14,7 @@ module MarathonDeploy
     uri = construct_uri url 
     begin
       http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
       http.open_timeout = @@o_timeout
       http.read_timeout = @@r_timeout
       req = Net::HTTP.const_get(method).new(uri.request_uri)
