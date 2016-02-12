@@ -18,6 +18,9 @@ module MarathonDeploy
       http.open_timeout = @@o_timeout
       http.read_timeout = @@r_timeout
       req = Net::HTTP.const_get(method).new(uri.request_uri)
+      if MarathonDeploy::MarathonDefaults::marathon_username and MarathonDeploy::MarathonDefaults::marathon_password
+        req.basic_auth(MarathonDeploy::MarathonDefaults::marathon_username, MarathonDeploy::MarathonDefaults::marathon_password)
+      end
       if payload
         req.body = payload.to_json
       end

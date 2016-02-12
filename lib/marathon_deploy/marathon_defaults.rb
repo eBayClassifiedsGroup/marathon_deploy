@@ -5,6 +5,10 @@ require 'logger'
 module MarathonDeploy
   module MarathonDefaults
  
+  class << self
+    attr_accessor :marathon_username, :marathon_password
+  end
+
   DEPLOYMENT_RECHECK_INTERVAL = 3
   DEPLOYMENT_TIMEOUT = 300
   HEALTHY_WAIT_TIMEOUT = 300
@@ -23,6 +27,8 @@ module MarathonDeploy
   DEFAULT_REMOVE_ELEMENTS = []
   DEFAULT_KEEP_ELEMENTS = [':id']
   ENVIRONMENT_VARIABLE_PREFIX = 'MARATHON_DEPLOY_'
+  marathon_username = nil
+  marathon_password = nil
 
   @@preproduction_override = {
     :instances => 5,
