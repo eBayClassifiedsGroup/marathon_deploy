@@ -10,39 +10,41 @@ module MarathonDeploy
 @@og_timeout = 60.0
 @@rg_timeout = 60.0
 
-  def self.put(url,payload)
+  def self.req(method, url, payload=nil, errors_are_fatal=false)
     uri = construct_uri url 
     begin
       http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
       http.open_timeout = @@o_timeout
       http.read_timeout = @@r_timeout
-      req = Net::HTTP::Put.new(uri.request_uri)
-      req.body = payload.to_json
+      req = Net::HTTP.const_get(method).new(uri.request_uri)
+      if MarathonDeploy::MarathonDefaults::marathon_username and MarathonDeploy::MarathonDefaults::marathon_password
+        req.basic_auth(MarathonDeploy::MarathonDefaults::marathon_username, MarathonDeploy::MarathonDefaults::marathon_password)
+      end
+      if payload
+        req.body = payload.to_json
+      end
       req["Content-Type"] = "application/json"
       response = http.request(req)
     rescue Exception => e
-      $LOG.error("Error calling marathon api: #{e.message}")
-      exit!
+      if errors_are_fatal
+        $LOG.error("Error calling marathon api: #{e.message}")
+        exit!
+      else
+        message = "Error calling marathon api: #{e.message}"
+        $LOG.error(message)
+        raise Error::MarathonError, message, caller
+      end
     end
     return response
   end
+
+  def self.put(url,payload)
+    return self.req('Put', url, payload, true)
+  end
   
   def self.post(url, payload)
-    uri = construct_uri url 
-    begin
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.open_timeout = @@o_timeout
-      http.read_timeout = @@r_timeout
-      req = Net::HTTP::Post.new(uri.request_uri)
-      req.body = payload.to_json
-      req["Content-Type"] = "application/json"
-      response = http.request(req)
-    rescue Exception => e
-      message = "Error calling marathon api: #{e.message}"
-      $LOG.error(message)
-      raise Error::MarathonError, message, caller
-    end
-    return response
+    return self.req('Post', url, payload, false)
   end
   
   def self.construct_uri(url)
@@ -51,19 +53,7 @@ module MarathonDeploy
   end
   
   def self.delete(url)
-    uri = construct_uri url 
-       begin
-         http = Net::HTTP.new(uri.host, uri.port)
-         http.open_timeout = @@o_timeout
-         http.read_timeout = @@r_timeout
-         req = Net::HTTP::Delete.new(uri.request_uri)         
-         response = http.request(req)
-       rescue Exception => e
-         message = "Error calling marathon api: #{e.message}"
-         $LOG.error(message)
-         raise Error::MarathonError, message, caller
-       end
-       return response    
+    return self.req('Delete', url, nil, false)
   end
   
   def self.clean_url(url)
@@ -71,21 +61,7 @@ module MarathonDeploy
   end
   
   def self.get(url)
-    uri = construct_uri url
-    begin
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.open_timeout = @@og_timeout
-      http.read_timeout = @@rg_timeout
-#      http.set_debug_output($stdout)
-      req = Net::HTTP::Get.new(uri.request_uri)
-      req["Content-Type"] = "application/json"
-      response = http.request(req)
-    rescue Exception => e
-      message = "Error calling marathon api: #{e.message}"
-      $LOG.error(message)
-      raise Error::MarathonError, message, caller
-    end
-    return  response
+    return self.req('Get', url, nil, false)
   end
   
   def self.valid_url(url)

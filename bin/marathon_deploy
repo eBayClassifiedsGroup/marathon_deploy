@@ -21,6 +21,8 @@ options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
 options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
 options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
 options[:remove_elements] = MarathonDeploy::MarathonDefaults::DEFAULT_REMOVE_ELEMENTS
+options[:marathon_username] = nil
+options[:marathon_password] = nil
   
   
 OptionParser.new do |opts|
@@ -29,6 +31,14 @@ OptionParser.new do |opts|
   
   opts.on("-u","--url MARATHON_URL(S)", Array, "Default: #{options[:marathon_endpoints]}") do |u|    
     options[:marathon_endpoints] = u  
+  end
+
+  opts.on("-U","--username USERNAME", "Marathon authentication username") do |u|
+    options[:marathon_username] = u
+  end
+
+  opts.on("-p","--password PASSWORD", "Marathon authentication password") do |p|
+    options[:marathon_password] = p
   end
     
   opts.on("-l", "--logfile LOGFILE", "Default: STDOUT") do |l|
@@ -88,6 +98,11 @@ elsif (File.file?(DEFAULT_DEPLOYFILE))
   deployfile = DEFAULT_DEPLOYFILE
 else
   abort("No deploy file argument provided and default \'#{DEFAULT_DEPLOYFILE}\' does not exist in current directory \'#{Dir.pwd}\'")  
+end
+
+if options[:marathon_username] and options[:marathon_password]
+  MarathonDeploy::MarathonDefaults::marathon_username = options[:marathon_username]
+  MarathonDeploy::MarathonDefaults::marathon_password = options[:marathon_password]
 end
 
 $LOG = options[:logfile] ? Logger.new(options[:logfile]) : Logger.new(STDOUT)
