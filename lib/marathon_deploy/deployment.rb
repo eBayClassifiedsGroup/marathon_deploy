@@ -5,43 +5,47 @@ require 'timeout'
 
 module MarathonDeploy
   class Deployment
-  
+
   DEPLOYMENT_RECHECK_INTERVAL = MarathonDefaults::DEPLOYMENT_RECHECK_INTERVAL
   DEPLOYMENT_TIMEOUT = MarathonDefaults::DEPLOYMENT_TIMEOUT
   HEALTHY_WAIT_TIMEOUT = MarathonDefaults::HEALTHY_WAIT_TIMEOUT
   HEALTHY_WAIT_RECHECK_INTERVAL = MarathonDefaults::HEALTHY_WAIT_RECHECK_INTERVAL
-  
+
   attr_reader :url, :application, :deploymentId
-  
+
   def initialize(url, application)
     raise ArgumentError, "second argument to deployment object must be an Application", caller unless (!application.nil? && application.class == Application)
-    raise Error::BadURLError, "invalid url => #{url}", caller if (!HttpUtil.valid_url(url))    
+    raise Error::BadURLError, "invalid url => #{url}", caller if (!HttpUtil.valid_url(url))
     @url = HttpUtil.clean_url(url)
     @application = application
   end
-  
+
   def timeout
     return DEPLOYMENT_TIMEOUT
   end
-  
+
   def healthcheck_timeout
     return HEALTHY_WAIT_TIMEOUT
   end
-  
-  def versions  
-    if (!applicationExists?)  
-      response = HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id + '/versions')  
+
+  def versions
+    if (!applicationExists?)
+      response = HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id + '/versions')
       response_body = Utils.response_body(response)
       return response_body[:versions]
     else
       return Array.new
     end
   end
-     
+
   def wait_for_deployment_id(message = "Deployment with deploymentId #{@deploymentId} in progress")
       startTime = Time.now
-      deployment_seen = false  
+      deployment_seen = false
       Timeout::timeout(DEPLOYMENT_TIMEOUT) do
+        while !deployment_running?
+          sleep(DEPLOYMENT_RECHECK_INTERVAL)
+          $LOG.info("Waiting for Marathon to start deployment")
+        end
         while running_for_deployment_id?
 
           deployment_seen = true
@@ -52,19 +56,19 @@ module MarathonDeploy
           deployments = deployments_for_deployment_id
           deployments.each do |item|
             $LOG.debug(deployment_string(item))
-          end   
+          end
           sleep(DEPLOYMENT_RECHECK_INTERVAL)
-        end        
+        end
         #STDOUT.puts "" if ( $LOG.level == 1 )
         if (deployment_seen)
           elapsedTime = '%.2f' % (Time.now - startTime)
-          $LOG.info("Deployment with deploymentId #{@deploymentId} ended (Total deployment time #{elapsedTime}s)")  
+          $LOG.info("Deployment with deploymentId #{@deploymentId} ended (Total deployment time #{elapsedTime}s)")
         end
       end
   end
-  
+
   def wait_for_application(message = "Deployment of application #{@application.id} in progress")
-      deployment_seen = false  
+      deployment_seen = false
       Timeout::timeout(DEPLOYMENT_TIMEOUT) do
         while running_for_application_id?
           deployment_seen = true
@@ -74,18 +78,18 @@ module MarathonDeploy
           deployments_for_application_id.each do |item|
             $LOG.debug(deployment_string(item))
           end
-          #$LOG.debug(JSON.pretty_generate(JSON.parse(response.body)))       
+          #$LOG.debug(JSON.pretty_generate(JSON.parse(response.body)))
           sleep(DEPLOYMENT_RECHECK_INTERVAL)
-        end                
+        end
         #STDOUT.puts "" if ( $LOG.level == 1 )
         if (deployment_seen)
-          $LOG.info("Deployment of application #{@application.id} ended")  
+          $LOG.info("Deployment of application #{@application.id} ended")
         end
-      end    
+      end
   end
-  
-  def wait_until_healthy  
-    startTime = Time.now  
+
+  def wait_until_healthy
+    startTime = Time.now
     Timeout::timeout(HEALTHY_WAIT_TIMEOUT) do
       loop do
         break if (!health_checks_defined?)
@@ -94,7 +98,7 @@ module MarathonDeploy
         if (!sick.empty?)
           $LOG.info("#{sick.size}/#{@application.instances} instances are not healthy, retrying in #{HEALTHY_WAIT_RECHECK_INTERVAL}s (elapsed time #{elapsedTime}s)")
           $LOG.debug("Sick instances: " + sick.join(','))
-        else         
+        else
           healthy = get_alive(true)
           if (healthy.size == @application.instances)
             elapsedTime = '%.2f' % (Time.now - startTime)
@@ -104,12 +108,12 @@ module MarathonDeploy
           else
             $LOG.info("#{healthy.size} healthy instances seen, #{@application.instances} healthy instances expected, retrying in #{HEALTHY_WAIT_RECHECK_INTERVAL}s")
           end
-        end      
+        end
         sleep(HEALTHY_WAIT_RECHECK_INTERVAL)
-      end                         
-    end  
+      end
+    end
   end
-    
+
   def cancel(deploymentId,force=false)
     raise ArgumentError, "deploymentId must be specified to cancel deployment", caller if (deploymentId.empty?)
     if (running_for_deployment_id?)
@@ -118,7 +122,7 @@ module MarathonDeploy
     end
     return response
   end
-  
+
   def applicationExists?
     response = list_app
     if (response.code.to_i == 200)
@@ -126,18 +130,18 @@ module MarathonDeploy
     end
       return false
   end
-       
+
   def create_app
     response = HttpUtil.post(@url + MarathonDefaults::MARATHON_APPS_REST_PATH,@application.json)
     @deploymentId = get_deployment_id
     return response
   end
-  
+
   def update_app(force=false)
     url = @url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id
     url += force ? '?force=true' : ''
     $LOG.debug("Updating app #{@application.id} #{url}")
-    response = HttpUtil.put(url,@application.json)    
+    response = HttpUtil.put(url,@application.json)
     begin
       @deploymentId = Utils.response_body(response)[:deploymentId]
     rescue Exception=>e
@@ -145,28 +149,28 @@ module MarathonDeploy
     end
     return response
   end
-  
+
   def rolling_restart
     url = @url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id + '/restart'
-    $LOG.debug("Calling marathon api with url: #{url}") 
+    $LOG.debug("Calling marathon api with url: #{url}")
     response = HttpUtil.post(url,{})
     $LOG.info("Restart of #{@application.id} returned status code: #{response.code}")
     $LOG.info(JSON.pretty_generate(JSON.parse(response.body)))
-  end  
-  
+  end
+
   def health_checks_defined?
     health_checks = @application.health_checks
     return true unless health_checks.nil? or health_checks.empty?
     return false
-  end  
-  
+  end
+
   ####### PRIVATE METHODS ##########
   private
 
   # returns an array of taskIds which are alive
-  def get_alive(value) 
-    raise ArgumentError, "value must be boolean true or false" unless (!!value == value)       
-    if (health_checks_defined?)     
+  def get_alive(value)
+    raise ArgumentError, "value must be boolean true or false" unless (!!value == value)
+    if (health_checks_defined?)
         apps = Array.new
         begin
           apps = Utils.getValue(@url,@application,:app)
@@ -180,28 +184,28 @@ module MarathonDeploy
           tasks = Hash.new
           task_ids = Array.new
           check_results = get_healthcheck_results.flatten
-          check_results.each do |task| 
-            next if task.nil?  
-            tasks[task[:taskId].to_s] ||= [] 
+          check_results.each do |task|
+            next if task.nil?
+            tasks[task[:taskId].to_s] ||= []
           tasks[task[:taskId].to_s] << task[:alive]
           end
-          
-          tasks.each do |k,v|            
+
+          tasks.each do |k,v|
             if (value)
               # if there are only alive=true for all healthchecks for this instance
               if (v.uniq.length == 1 && v.uniq.first == value)
                 task_ids << k
-              end 
+              end
             else
               # if alive=false is seen for any healthchecks for this instance
               if (v.include?(value))
                 task_ids << k
-              end 
-            end            
-          end         
+              end
+            end
+          end
         end
     else
-      $LOG.info("No health checks defined. Cannot determine application health of #{@application.id}.")    
+      $LOG.info("No health checks defined. Cannot determine application health of #{@application.id}.")
     end
     return task_ids
   end
@@ -223,7 +227,7 @@ module MarathonDeploy
       $LOG.info "EXCEPTION: #{e} Cannot determine healthcheck_result"
     end
   end
-    
+
   def get_deployment_id
     begin
       a = Utils.getValue(@url,@application,:app,:deployments,0)[:id]
@@ -232,48 +236,48 @@ module MarathonDeploy
       $LOG.info "EXCEPTION: #{e} Cannot determine deployment_id"
     end
   end
-    
+
   def list_all
     HttpUtil.get(@url + MarathonDefaults::MARATHON_DEPLOYMENT_REST_PATH)
-  end 
-  
+  end
+
   def running_for_application_id?
     if (deployment_running? && !deployments_for_application_id.empty?)
       return true
     end
       return false
   end
-  
+
   def running_for_deployment_id?
     if (deployment_running? && !deployments_for_deployment_id.empty?)
       return true
     end
       return false
   end
-  
+
   def deployment_running?
     response = list_all
     body = JSON.parse(response.body)
     return false if body.empty?
     return true
-  end   
-   
+  end
+
   def get_deployment_ids
     response = list_all
     payload = JSON.parse(response.body)
     return payload.collect { |d| d['id'] }
   end
-  
+
   def list_app
     HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id)
   end
-  
+
   # DONT USE: the response seems to be broken in marathon for /v2/apps/application-id/tasks
   #def get_tasks
   #  HttpUtil.get(@url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id + '/tasks')
   #end
-  
-  def deployment_string(deploymentJsonObject)  
+
+  def deployment_string(deploymentJsonObject)
     string = "\n" + "+-" * 25 + " DEPLOYMENT INFO  " + "+-" * 25 + "\n"
     deploymentJsonObject.sort.each do |k,v|
       case v
@@ -286,21 +290,21 @@ module MarathonDeploy
       else
         string += "#{k} + #{v}\n"
       end
-    end  
-   return string 
+    end
+   return string
   end
-    
+
   def deployments_for_deployment_id
     response = list_all
     payload = JSON.parse(response.body)
     return payload.find_all { |d| d['id'] == @deploymentId }
   end
-  
+
   def deployments_for_application_id
     response = list_all
     payload = JSON.parse(response.body)
     return payload.find_all { |d| d['affectedApps'].include?('/' + @application.id) }
   end
-  
+
   end
 end
