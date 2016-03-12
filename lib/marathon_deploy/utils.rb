@@ -60,6 +60,18 @@ module MarathonDeploy
     value
   end
 
+  def self.putJSON(url,application)
+    response = nil
+    5.times { |i|
+      i+=1
+      response = HttpUtil.put(url + MarathonDefaults::MARATHON_APPS_REST_PATH + application.id,application.json)
+      break if (!response.nil?)
+      $LOG.info "Did not receive anything from Marathon. Waiting #{i} seconds then retrying ..."
+      sleep i
+    }
+    return response
+  end
+
   def self.lookup(model, key, *rest)
     v = model[key]
     return v if rest.empty?

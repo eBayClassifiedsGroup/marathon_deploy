@@ -58,7 +58,14 @@ module MarathonDeploy
     
     # wait for deployment to finish, according to marathon deployment API call
     begin
-      deployment.wait_for_deployment_id 
+      deployment.wait_for_deployment
+    rescue Timeout::Error => e
+      $LOG.warn("Timed out after waiting for deployment to start")
+      $LOG.warn("Deployment did not start at all")
+      $LOG.warn("Possible reason: deploying the same plan already (use option -f to ensure that plans are unique)")
+    end
+    begin
+      deployment.wait_for_deployment_id
     rescue Timeout::Error => e
       $LOG.error("Timed out waiting for deployment of #{application.id} to complete. Canceling deploymentId #{deployment.deploymentId} and rolling back!")
       deployment.cancel(deployment.deploymentId)

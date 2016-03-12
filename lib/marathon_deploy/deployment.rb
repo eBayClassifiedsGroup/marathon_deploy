@@ -6,6 +6,7 @@ require 'timeout'
 module MarathonDeploy
   class Deployment
 
+  WAIT_FOR_DEPLOYMENT_TIMEOUT = MarathonDefaults::WAIT_FOR_DEPLOYMENT_TIMEOUT
   DEPLOYMENT_RECHECK_INTERVAL = MarathonDefaults::DEPLOYMENT_RECHECK_INTERVAL
   DEPLOYMENT_TIMEOUT = MarathonDefaults::DEPLOYMENT_TIMEOUT
   HEALTHY_WAIT_TIMEOUT = MarathonDefaults::HEALTHY_WAIT_TIMEOUT
@@ -38,16 +39,21 @@ module MarathonDeploy
     end
   end
 
+  def wait_for_deployment()
+      startTime = Time.now
+      Timeout::timeout(WAIT_FOR_DEPLOYMENT_TIMEOUT) do
+          while !deployment_running?
+            sleep(DEPLOYMENT_RECHECK_INTERVAL)
+            $LOG.info("Waiting for Marathon to start deployment")
+          end
+      end
+  end
+
   def wait_for_deployment_id(message = "Deployment with deploymentId #{@deploymentId} in progress")
       startTime = Time.now
       deployment_seen = false
       Timeout::timeout(DEPLOYMENT_TIMEOUT) do
-        while !deployment_running?
-          sleep(DEPLOYMENT_RECHECK_INTERVAL)
-          $LOG.info("Waiting for Marathon to start deployment")
-        end
         while running_for_deployment_id?
-
           deployment_seen = true
           #response = list_all
           #STDOUT.print "." if ( $LOG.level == 1 )
@@ -137,11 +143,9 @@ module MarathonDeploy
     return response
   end
 
-  def update_app(force=false)
-    url = @url + MarathonDefaults::MARATHON_APPS_REST_PATH + @application.id
-    url += force ? '?force=true' : ''
+  def update_app
     $LOG.debug("Updating app #{@application.id} #{url}")
-    response = HttpUtil.put(url,@application.json)
+    response = Utils.putJSON(@url,@application)
     begin
       @deploymentId = Utils.response_body(response)[:deploymentId]
     rescue Exception=>e

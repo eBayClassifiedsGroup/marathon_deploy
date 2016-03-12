@@ -9,6 +9,7 @@ module MarathonDeploy
     attr_accessor :marathon_username, :marathon_password
   end
 
+  WAIT_FOR_DEPLOYMENT_TIMEOUT = 7
   DEPLOYMENT_RECHECK_INTERVAL = 3
   DEPLOYMENT_TIMEOUT = 300
   HEALTHY_WAIT_TIMEOUT = 300
