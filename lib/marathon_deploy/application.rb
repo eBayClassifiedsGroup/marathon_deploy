@@ -2,6 +2,7 @@ require 'marathon_deploy/marathon_defaults'
 require 'marathon_deploy/yaml_json'
 require 'marathon_deploy/error'
 require 'marathon_deploy/utils'
+require 'deep_merge'
 
 module MarathonDeploy
   
@@ -13,35 +14,25 @@ module MarathonDeploy
   # @param [Hash] options hash for the application object
   # @option options [Boolean] :force force a deployment by including an environment variable containing a random string value in the json marathon payload
   # @option options [String] :deployfile file template and path. default deploy.yml in current directory
-  def initialize(options={ :force => false, :deployfile => 'deploy.yml', :remove_elements => []})
+  # @option options [MarathonDeploy::Environment] :environment environment specified with -e parameter
+  def initialize(options={
+      :force => false,
+      :deployfile => 'deploy.yml',
+      :remove_elements => [],
+      :environment => nil,
+  })
 
     deployfile = options[:deployfile]
-    
-    if (!File.exist?(deployfile))
-      message = "\'#{File.expand_path(deployfile)}\' not found."
-      raise Error::IOError, message, caller
+    @json = readFile(deployfile)
+
+    if (!options[:environment].nil?)
+      overrides = env_overrides(
+        File.dirname(deployfile),
+        options[:environment].name)
+
+      @json = @json.deep_merge!(overrides)
     end
 
-    extension = File.extname(deployfile)
-    
-    case extension
-      when '.json'
-        @json = YamlJson.read_json_w_macros(deployfile)
-      when '.yaml','.yml'
-        @json = YamlJson.yaml2json(deployfile)
-      else
-        message = "File extension #{extension} is not supported for deployment file #{deployfile}"
-        raise Error::UnsupportedFileExtension, message, caller
-    end 
-
-    # JSON fix for marathon
-    # marathon require ENV variables to be quoted
-    @json['env'].each do |key, value|
-      if (value.is_a? Numeric)
-        @json['env'][key] = value.to_json
-      end
-    end
-    
     missing_attributes = MarathonDefaults.missing_attributes(@json) 
     
     if(!missing_attributes.empty?)
@@ -69,7 +60,8 @@ module MarathonDeploy
   def overlay_preproduction_settings
     @json = MarathonDefaults.overlay_preproduction_settings(@json)
   end
-  
+
+  # @return [Array]
   def health_checks
     @json[:healthChecks]
   end
@@ -120,7 +112,51 @@ module MarathonDeploy
     
   def instances
     @json[:instances]  
-  end  
-     
+  end
+
+  private
+  def readFile(f)
+    $LOG.debug "Reading file #{f}"
+    if (!File.exist?(f))
+      message = "\'#{File.expand_path(f)}\' not found."
+      raise Error::IOError, message, caller
+    end
+
+    extension = File.extname(f)
+
+    case extension
+      when '.json'
+        json = YamlJson.read_json_w_macros(f)
+      when '.yaml','.yml'
+        json = YamlJson.yaml2json(f)
+      else
+        message = "File extension #{extension} is not supported for deployment file #{f}"
+        raise Error::UnsupportedFileExtension, message, caller
+    end
+
+    # JSON fix for marathon
+    # marathon require ENV variables to be quoted
+    json['env'].each do |key, value|
+      if (value.is_a? Numeric)
+        json['env'][key] = value.to_json
+      end
+    end
+
+    return json
+  end
+
+  def env_overrides(dir, env)
+    yml = "#{dir}/#{env}.yml"
+    if (File.exist?(yml))
+      return readFile(yml)
+    end
+
+    json = "#{dir}/#{env}.json"
+    if (File.exist?(json))
+      return readFile(json)
+    end
+
+    return {}
+  end
   end
 end
