@@ -1,6 +1,9 @@
 language: ruby
 ruby:
-- 2.2
+- 1.9.3
+before_install:
+ - gem uninstall bundler -x
+ - gem install bundler --version 1.11.2
 deploy:
   provider: rubygems
   api_key:
