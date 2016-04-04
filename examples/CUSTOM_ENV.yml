@@ -1,0 +1,13 @@
+---
+mem: 4096
+env:
+  JAVA_XMX: 2048m
+healthChecks:
+- gracePeriodSeconds: 30
+  path: "/prod/health"
+  intervalSeconds: 10
+  maxConsecutiveFailures: 3
+  portIndex: 0
+  protocol: HTTP
+  timeoutSeconds: 30
+

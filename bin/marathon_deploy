@@ -133,7 +133,11 @@ remove_elements = Array.new
   end
  
 begin
-  application = MarathonDeploy::Application.new(:deployfile => deployfile, :force => options[:force], :remove_elements => remove_elements)
+  application = MarathonDeploy::Application.new(
+      :deployfile => deployfile,
+      :environment => environment,
+      :force => options[:force],
+      :remove_elements => remove_elements)
 rescue MarathonDeploy::Error::IOError, MarathonDeploy::Error::UndefinedMacroError,MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::UnsupportedFileExtension  => e
   $LOG.debug(e)
   $LOG.error(e.message)

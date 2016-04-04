@@ -43,5 +43,27 @@ class ApplicationTest < Minitest::Test
     refute_nil(app.health_checks, "health checks returned nil")    
     refute_empty(app.health_checks, "health checks returned empty")
   end
-  
+
+  def test_overwriting_from_environment_file
+    application = MarathonDeploy::Application.new(
+        :deployfile => File.expand_path('../fixtures/env/deploy.yml', __FILE__),
+        :environment => MarathonDeploy::Environment.new("STAGING")
+    )
+    assert_instance_of(MarathonDeploy::Application,application)
+    refute_empty(application.id)
+    assert_equal(@release_version,application.env[:RELEASE_VERSION])
+    # should stay unchanged since they are not overwritten
+    assert_equal("default-settings-overriden-by-environment-example", application.id)
+    assert_equal("python", application.env[:SERVICE_NAME])
+    # should be overwritten by STAGING.yml
+    assert_equal(16, application.json[:mem])
+    assert_equal(2, application.json[:cpus])
+    assert_equal(5, application.json[:instances])
+    assert_equal("1024m", application.env[:JAVA_XMX])
+    # should be appended from STAGING.yml to already defined health checks
+    assert(application.health_checks.one? { |hc| hc[:path] == "/prod/health/check" }, "new environment-specific health-check should be added")
+    assert(application.health_checks.one? { |hc| hc[:path] == "/default/health/check" }, "default health check should be kept")
+  end
+
+
 end

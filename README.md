@@ -51,6 +51,14 @@ Usage: bin/marathon_deploy [options]
     -e, --environment ENVIRONMENT    Default: PREPRODUC
 ```
 
+### Overriding configuration based on environment
+By using the `-e <ENVIRONMENT>` switch you can specify a custom environment which can overwrite the settings in the deploy file.
+For example, setting `-e STAGING` and creating a STAGING.yml or STAGING.json file in the same folder with the deploy file
+will trigger the overwriting process.
+
+See `examples/run-with-env-overrides.sh` for a demo of this feature. Here we are specifying different
+memory settings and appending a custom health-check based on environment.
+
 ### Example Deployfile
 By default, a file called 'deploy.yml' is searched for in the current directory where deploy.rb is run from.  An alternative file name can be provided with the -f parameter.
 
