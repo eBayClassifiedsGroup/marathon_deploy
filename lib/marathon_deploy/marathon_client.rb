@@ -50,7 +50,10 @@ module MarathonDeploy
     end
 
     if ((300..999).include?(response.code.to_i))
-      $LOG.error("Deployment response body => " + JSON.pretty_generate(JSON.parse(response.body)))
+      rspjson = JSON.parse(response.body)
+      $LOG.error('Deployment error: ' + rspjson['message']) if rspjson.has_key?('message')
+      $LOG.error("With details: #{rspjson}")
+      $LOG.error("Deployment response body => " + JSON.pretty_generate(rspjson))
       raise Error::DeploymentError, "Deployment returned response code #{response.code}", caller
     end
     
@@ -85,4 +88,5 @@ module MarathonDeploy
   end
   
   end
+
 end
