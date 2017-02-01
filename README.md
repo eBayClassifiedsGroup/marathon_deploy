@@ -42,13 +42,14 @@ Executables from this gem:
 ```
 >marathon_deploy -h
 Usage: bin/marathon_deploy [options]
-    -u, --url MARATHON_URL(S)        Default: ["http://localhost:8080"]
-    -l, --logfile LOGFILE            Default: STDOUT
-    -d, --debug                      Run in debug mode
-    -v, --version                    Version info
-    -f, --force                      Force deployment when sending same deploy JSON to Marathon
-    -n, --noop                       No action. Just display what would be performed.
-    -e, --environment ENVIRONMENT    Default: PREPRODUC
+    -u, --url MARATHON_URL(S)             Default: ["http://localhost:8080"]
+    -l, --logfile LOGFILE                 Default: STDOUT
+    -d, --debug                           Run in debug mode
+    -v, --version                         Version info
+    -f, --force                           Force deployment when sending same deploy JSON to Marathon
+    -n, --noop                            No action. Just display what would be performed.
+    -i, --ignore-preproduction-defaults   Ignores the preproduction defaults for cpu, memory, and instance limits
+    -e, --environment ENVIRONMENT         Default: PREPRODUC
 ```
 
 ### Overriding configuration based on environment
