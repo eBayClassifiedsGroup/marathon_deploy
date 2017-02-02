@@ -4,7 +4,7 @@ require 'logger'
 
 module MarathonDeploy
   module MarathonDefaults
- 
+
   class << self
     attr_accessor :marathon_username, :marathon_password
   end
@@ -25,6 +25,7 @@ module MarathonDeploy
   MARATHON_DEPLOYMENT_REST_PATH = '/v2/deployments/'
   DEFAULT_FORCE_DEPLOY = false
   DEFAULT_NOOP = false
+  DEFAULT_IGNORE_PREPRODUCTION_DEFAULTS = false
   DEFAULT_REMOVE_ELEMENTS = []
   DEFAULT_KEEP_ELEMENTS = [':id']
   ENVIRONMENT_VARIABLE_PREFIX = 'MARATHON_DEPLOY_'
@@ -44,37 +45,37 @@ module MarathonDeploy
   }
 
   @@required_marathon_env_variables = %w[]
-  
+
   #@@required_marathon_attributes = %w[id env container healthChecks args storeUrls].map(&:to_sym)
   @@required_marathon_attributes = %w[id].map(&:to_sym)
-   
+
   def self.missing_attributes(json)
     json = Utils.symbolize(json)
     missing = []
     @@required_marathon_attributes.each do |att|
       if (!json[att])
-        missing << att 
+        missing << att
       end
     end
     return missing
   end
-  
+
   def self.missing_envs(json)
     json = Utils.symbolize(json)
-    
+
     if (!json.key?(:env))
-      raise Error::MissingMarathonAttributesError, "no env attribute found in deployment file", caller 
+      raise Error::MissingMarathonAttributesError, "no env attribute found in deployment file", caller
     end
-    
+
     missing = []
     @@required_marathon_env_variables.each do |variable|
       if (!json[:env][variable])
-        missing << variable 
+        missing << variable
       end
     end
     return missing
-  end  
-  
+  end
+
   def self.overlay_preproduction_settings(json)
     json = Utils.deep_symbolize(json)
       @@preproduction_override.each do |property,value|
@@ -90,6 +91,6 @@ module MarathonDeploy
       end
       return json
   end
-  
+
   end
 end

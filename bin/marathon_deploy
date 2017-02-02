@@ -21,16 +21,17 @@ options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
 options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
 options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
 options[:remove_elements] = MarathonDeploy::MarathonDefaults::DEFAULT_REMOVE_ELEMENTS
+options[:ignore_preproduction_defaults] = MarathonDeploy::MarathonDefaults::DEFAULT_IGNORE_PREPRODUCTION_DEFAULTS
 options[:marathon_username] = nil
 options[:marathon_password] = nil
-  
-  
+
+
 OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options]"
   opts.release =  MarathonDeploy::VERSION
-  
-  opts.on("-u","--url MARATHON_URL(S)", Array, "Default: #{options[:marathon_endpoints]}") do |u|    
-    options[:marathon_endpoints] = u  
+
+  opts.on("-u","--url MARATHON_URL(S)", Array, "Default: #{options[:marathon_endpoints]}") do |u|
+    options[:marathon_endpoints] = u
   end
 
   opts.on("-U","--username USERNAME", "Marathon authentication username") do |u|
@@ -40,15 +41,15 @@ OptionParser.new do |opts|
   opts.on("-p","--password PASSWORD", "Marathon authentication password") do |p|
     options[:marathon_password] = p
   end
-    
+
   opts.on("-l", "--logfile LOGFILE", "Default: STDOUT") do |l|
-    options[:logfile] = l  
+    options[:logfile] = l
   end
-  
+
   opts.on("-d", "--debug", "Run in debug mode") do |d|
     options[:debug] = Logger::DEBUG
   end
-  
+
   opts.on("-v", "--version", "Version info") do |v|
     puts "#{$0} version #{opts.release}"
     exit
@@ -70,11 +71,15 @@ OptionParser.new do |opts|
     options[:environment] = e
   end
 
+  opts.on("-i", "--ignore-preproduction-defaults", "Default: #{options[:ignore_preproduction_defaults]}" ) do |i|
+    options[:ignore_preproduction_defaults] = true
+  end
+
   opts.on_tail("-h", "--help", "Show this message") do
     puts opts
     puts "   ----------------- Additional Info -----------------", <<-DESCRIPTION
     * Marathon Env  variables:
-      - Env variables with the prefix "#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}" will be injected into the deployment plan.  
+      - Env variables with the prefix "#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}" will be injected into the deployment plan.
       - The prefix "#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}" will be removed before being added to the marathon json payload.
       - Example:  Env variable #{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}DEBUG=True with be passed as DEBUG=True to the marathon-api.
     * Macros:
@@ -83,8 +88,8 @@ OptionParser.new do |opts|
       - If any marcos are not defined by Env variables, deployment will fail.
     DESCRIPTION
     exit
-  end 
-  
+  end
+
 end.parse!
 
 abort("Ambiguous arguments: #{ARGV.join(',')}. Only one deploy file argument may be passed.") if (ARGV.length > 1)
@@ -97,7 +102,7 @@ if (!argfile.nil?)
 elsif (File.file?(DEFAULT_DEPLOYFILE))
   deployfile = DEFAULT_DEPLOYFILE
 else
-  abort("No deploy file argument provided and default \'#{DEFAULT_DEPLOYFILE}\' does not exist in current directory \'#{Dir.pwd}\'")  
+  abort("No deploy file argument provided and default \'#{DEFAULT_DEPLOYFILE}\' does not exist in current directory \'#{Dir.pwd}\'")
 end
 
 if options[:marathon_username] and options[:marathon_password]
@@ -108,9 +113,9 @@ end
 $LOG = options[:logfile] ? Logger.new(options[:logfile]) : Logger.new(STDOUT)
 $LOG.level = options[:debug]
 
-noop = options[:noop]  
+noop = options[:noop]
 environment = MarathonDeploy::Environment.new(options[:environment])
-    
+
 marathon_endpoints = Array.new
   if (options[:marathon_endpoints].nil?)
     if (environment.is_production?)
@@ -131,7 +136,7 @@ remove_elements = Array.new
       eval n if not MarathonDeploy::MarathonDefaults::DEFAULT_KEEP_ELEMENTS.include? n
     end
   end
- 
+
 begin
   application = MarathonDeploy::Application.new(
       :deployfile => deployfile,
@@ -155,8 +160,10 @@ rescue MarathonDeploy::Error::BadFormatError => e
   exit!
 end
 
-if (!environment.is_production?)
-  application.overlay_preproduction_settings
+unless options[:ignore_preproduction_defaults]
+  if (!environment.is_production?)
+    application.overlay_preproduction_settings
+  end
 end
 
 display_msg = " MARATHON JSON DEPLOYMENT INSTRUCTIONS "
@@ -171,7 +178,7 @@ marathon_endpoints.each do |marathon_url|
     next if (noop)
     client = MarathonDeploy::MarathonClient.new(marathon_url)
     client.application = application
-    client.deploy  
+    client.deploy
   rescue MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::BadURLError, Timeout::Error => e
     $LOG.error(e.message)
     exit!
