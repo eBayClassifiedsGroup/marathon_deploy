@@ -3,6 +3,7 @@ require 'marathon_deploy/yaml_json'
 require 'marathon_deploy/error'
 require 'marathon_deploy/utils'
 require 'deep_merge'
+require 'pp'
 
 module MarathonDeploy
   
@@ -54,7 +55,7 @@ module MarathonDeploy
       
     inject_envs = ENV.select { |k,v| /^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/.match(k)  }
     cleaned_envs = Hash[inject_envs.map { |k,v| [k.gsub(/^#{MarathonDeploy::MarathonDefaults::ENVIRONMENT_VARIABLE_PREFIX}/,''), v ] }]   
-    self.add_envs cleaned_envs.to_h unless cleaned_envs.empty?
+    self.add_envs cleaned_envs.to_hash unless cleaned_envs.empty?
   end
   
   def overlay_preproduction_settings
