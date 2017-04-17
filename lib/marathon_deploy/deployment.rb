@@ -171,7 +171,7 @@ module MarathonDeploy
   ####### PRIVATE METHODS ##########
   private
 
-  # returns an array of taskIds which are alive
+  # returns an array of taskIds or instanceIds (from marathon 1.4.x) which are alive
   def get_alive(value)
     raise ArgumentError, "value must be boolean true or false" unless (!!value == value)
     if (health_checks_defined?)
@@ -190,8 +190,13 @@ module MarathonDeploy
           check_results = get_healthcheck_results.flatten
           check_results.each do |task|
             next if task.nil?
-            tasks[task[:taskId].to_s] ||= []
-          tasks[task[:taskId].to_s] << task[:alive]
+            if not task[:instanceId].nil?
+              id = task[:instanceId].to_s
+            else
+              id = task[:taskId].to_s
+            end
+            tasks[id] ||= []
+            tasks[id] << task[:alive]
           end
 
           tasks.each do |k,v|
