@@ -18,6 +18,7 @@ options[:debug] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGLEVEL
 options[:environment] = MarathonDeploy::MarathonDefaults::DEFAULT_ENVIRONMENT_NAME
 options[:marathon_endpoints] = MarathonDeploy::MarathonDefaults::DEFAULT_PREPRODUCTION_MARATHON_ENDPOINTS
 options[:logfile] = MarathonDeploy::MarathonDefaults::DEFAULT_LOGFILE
+options[:deployment_timeout] = MarathonDeploy::MarathonDefaults::DEPLOYMENT_TIMEOUT
 options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
 options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
 options[:remove_elements] = MarathonDeploy::MarathonDefaults::DEFAULT_REMOVE_ELEMENTS
@@ -44,6 +45,10 @@ OptionParser.new do |opts|
 
   opts.on("-l", "--logfile LOGFILE", "Default: STDOUT") do |l|
     options[:logfile] = l
+  end
+
+  opts.on("-t", "--timeout SECONDS", "Default: 300") do |l|
+    options[:deployment_timeout] = l
   end
 
   opts.on("-d", "--debug", "Run in debug mode") do |d|
@@ -176,7 +181,7 @@ marathon_endpoints.each do |marathon_url|
   begin
     puts "[NOOP] Sending JSON deployment instructions to marathon endpoint: #{marathon_url}." if (noop)
     next if (noop)
-    client = MarathonDeploy::MarathonClient.new(marathon_url)
+    client = MarathonDeploy::MarathonClient.new(marathon_url, options)
     client.application = application
     client.deploy
   rescue MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::BadURLError, Timeout::Error => e
