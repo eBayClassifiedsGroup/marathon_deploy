@@ -14,7 +14,7 @@ module MarathonDeploy
 
   attr_reader :url, :application, :deploymentId
 
-  def initialize(url, application)
+  def initialize(url, application, deployment_timeout = DEPLOYMENT_TIMEOUT)
     raise ArgumentError, "second argument to deployment object must be an Application", caller unless (!application.nil? && application.class == Application)
     raise Error::BadURLError, "invalid url => #{url}", caller if (!HttpUtil.valid_url(url))
     @url = HttpUtil.clean_url(url)
