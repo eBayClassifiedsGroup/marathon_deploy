@@ -28,7 +28,7 @@ module MarathonDeploy
 
   def deploy
     
-    deployment = Deployment.new(@marathon_url,application)
+    deployment = Deployment.new(@marathon_url,application, options[:deployment_timeout])
     
     $LOG.info("Checking if any deployments are already running for application #{application.id}")    
     begin
