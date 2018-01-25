@@ -49,6 +49,7 @@ Usage: bin/marathon_deploy [options]
     -f, --force                           Force deployment when sending same deploy JSON to Marathon
     -n, --noop                            No action. Just display what would be performed.
     -i, --ignore-preproduction-defaults   Ignores the preproduction defaults for cpu, memory, and instance limits
+    -R, --retry                           Will retry the deployment if the initial one fails
     -e, --environment ENVIRONMENT         Default: PREPRODUC
 ```
 

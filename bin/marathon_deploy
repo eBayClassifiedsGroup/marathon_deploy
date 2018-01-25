@@ -23,6 +23,7 @@ options[:force] = MarathonDeploy::MarathonDefaults::DEFAULT_FORCE_DEPLOY
 options[:noop] = MarathonDeploy::MarathonDefaults::DEFAULT_NOOP
 options[:remove_elements] = MarathonDeploy::MarathonDefaults::DEFAULT_REMOVE_ELEMENTS
 options[:ignore_preproduction_defaults] = MarathonDeploy::MarathonDefaults::DEFAULT_IGNORE_PREPRODUCTION_DEFAULTS
+options[:retry] = MarathonDeploy::MarathonDefaults::DEFAULT_RETRY
 options[:marathon_username] = nil
 options[:marathon_password] = nil
 
@@ -49,6 +50,10 @@ OptionParser.new do |opts|
 
   opts.on("-t", "--timeout SECONDS", "Default: 300") do |l|
     options[:deployment_timeout] = l
+  end
+
+  opts.on("-R", "--retry", "Default: #{options[:retry]}") do |i|
+    options[:retry] = true
   end
 
   opts.on("-d", "--debug", "Run in debug mode") do |d|
@@ -184,10 +189,15 @@ marathon_endpoints.each do |marathon_url|
     client = MarathonDeploy::MarathonClient.new(marathon_url, options)
     client.application = application
     client.deploy
-  rescue MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::BadURLError, Timeout::Error => e
+  rescue MarathonDeploy::Error::MissingMarathonAttributesError,MarathonDeploy::Error::BadURLError,Timeout::Error => e
     $LOG.error(e.message)
     exit!
   rescue MarathonDeploy::Error::DeploymentError => e
+    $LOG.error("Deployment of #{application} failed => #{e}")
+    if options[:retry]
+      $LOG.info("Deployment failed, retrying since retry is enabled")
+      client.deploy
+    end
     $LOG.error("Deployment of #{application} failed => #{e}")
     exit!
   rescue SocketError, MarathonDeploy::Error::MarathonError => e
